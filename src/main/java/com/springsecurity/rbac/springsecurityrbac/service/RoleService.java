@@ -204,9 +204,7 @@ public class RoleService {
         userService.save(user);
 
         //delete unused mappings
-        removableRolePagesPrivileges.forEach(rolePagesPrivileges -> {
-            rolePagesPrivilegesService.deleteById(rolePagesPrivileges.getId());
-        });
+        removableRolePagesPrivileges.forEach(rolePagesPrivileges -> rolePagesPrivilegesService.deleteById(rolePagesPrivileges.getId()));
         return revokeExtendPrivilege;
     }
 }

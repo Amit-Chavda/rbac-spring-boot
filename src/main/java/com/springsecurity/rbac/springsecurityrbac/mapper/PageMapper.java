@@ -4,7 +4,6 @@ import com.springsecurity.rbac.springsecurityrbac.dto.PageDto;
 import com.springsecurity.rbac.springsecurityrbac.entity.security.Page;
 import com.springsecurity.rbac.springsecurityrbac.entity.security.PagesPrivileges;
 import com.springsecurity.rbac.springsecurityrbac.entity.security.Privilege;
-import com.springsecurity.rbac.springsecurityrbac.util.Console;
 
 import java.util.ArrayList;
 import java.util.Collection;

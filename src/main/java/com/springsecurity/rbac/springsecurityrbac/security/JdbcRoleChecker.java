@@ -1,12 +1,12 @@
 package com.springsecurity.rbac.springsecurityrbac.security;
 
 import com.springsecurity.rbac.springsecurityrbac.entity.contsants.PRIVILEGE;
-import com.springsecurity.rbac.springsecurityrbac.util.Console;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collection;
@@ -15,7 +15,6 @@ import java.util.Collection;
 public class JdbcRoleChecker implements RoleChecker {
 
     private final Logger logger = LoggerFactory.getLogger(JdbcRoleChecker.class);
-    // private Supplier<Set<AntPathRequestMatcher>> supplier;
 
     private HttpServletRequest request;
 
@@ -72,6 +71,6 @@ public class JdbcRoleChecker implements RoleChecker {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        //Assert.notNull(supplier.get(), "function must not be null");
+        //todo: implement
     }
 }

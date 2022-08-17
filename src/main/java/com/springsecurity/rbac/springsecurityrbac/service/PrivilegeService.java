@@ -2,8 +2,6 @@ package com.springsecurity.rbac.springsecurityrbac.service;
 
 import com.springsecurity.rbac.springsecurityrbac.entity.security.Privilege;
 import com.springsecurity.rbac.springsecurityrbac.repository.PrivilegeRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,7 +9,7 @@ import java.util.Optional;
 
 @Service
 public class PrivilegeService {
-    private Logger logger = LoggerFactory.getLogger(PrivilegeService.class);
+
 
     private PrivilegeRepository privilegeRepository;
 

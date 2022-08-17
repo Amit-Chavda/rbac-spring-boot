@@ -46,7 +46,7 @@ public class RoleMapper {
 
     public static Collection<RoleDto> toRoleDtos(Collection<Role> all) {
         if (all == null) {
-            return null;
+            return Collections.emptyList();
         }
         return all.stream().map(RoleMapper::toRoleDto).toList();
     }
@@ -84,7 +84,7 @@ public class RoleMapper {
 
     public static Collection<Role> toRoles(Collection<RoleDto> roles) {
         if (roles == null) {
-            return null;
+            return Collections.emptyList();
         }
         return roles.stream().map(RoleMapper::toRole).toList();
     }
