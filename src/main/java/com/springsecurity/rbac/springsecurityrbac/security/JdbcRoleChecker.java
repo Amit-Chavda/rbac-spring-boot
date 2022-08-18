@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collection;
@@ -31,19 +30,25 @@ public class JdbcRoleChecker implements RoleChecker {
 
         String pageCode = this.request.getParameter("pageCode").toUpperCase();
 
+        //has access to requested page
         if (hasAccessToPage(authentication.getAuthorities(), pageCode)) {
-            if (hasAuthorityToAction(authentication.getAuthorities(), request.getMethod())) {
+
+            //has authorization to requested action on requested page
+            if (hasAuthorityToActOnPage(authentication.getAuthorities(), pageCode, request.getMethod())) {
                 logger.warn("User {} performed {} on {} ", authentication.getName(), request.getMethod(), pageCode);
                 return true;
+            } else {
+                logger.warn("User with id {} tried to perform unauthorized activity {} on page {}",
+                        authentication.getName(), request.getMethod(), pageCode);
             }
-            logger.warn("User with id {} tried to perform unauthorized activity {} on page {}",
-                    authentication.getName(), request.getMethod(), pageCode);
+        } else {
+            logger.warn("User with id {} tried to access unauthorized page {}", authentication.getName(), pageCode);
         }
-        logger.warn("User with id {} tried to access unauthorized page {}", authentication.getName(), pageCode);
+
         return false;
     }
 
-    private boolean hasAuthorityToAction(Collection<? extends GrantedAuthority> authorities, String method) {
+    private boolean hasAuthorityToActOnPage(Collection<? extends GrantedAuthority> authorities, String pageCode, String method) {
         String privilege = switch (method.toUpperCase()) {
             case "GET" -> PRIVILEGE.READ;
             case "PUT" -> PRIVILEGE.UPDATE;
@@ -53,7 +58,7 @@ public class JdbcRoleChecker implements RoleChecker {
         };
 
         for (GrantedAuthority authority : authorities) {
-            if (authority.getAuthority().split("\\.")[1].equals(privilege)) {
+            if ((pageCode + "." + privilege).equals(authority.getAuthority())) {
                 return true;
             }
         }
