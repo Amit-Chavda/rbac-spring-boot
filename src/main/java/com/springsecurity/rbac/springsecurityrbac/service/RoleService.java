@@ -79,7 +79,7 @@ public class RoleService {
                     );
 
                     //create or get pages privileges mapping
-                    PagesPrivileges pagesPrivileges = pagesPrivilegesService.findByName(new PagesPrivileges(page, privilege));
+                    PagesPrivileges pagesPrivileges = pagesPrivilegesService.addOrGet(new PagesPrivileges(page, privilege));
 
                     //set role
                     rolePagesPrivileges.setPagesPrivileges(pagesPrivileges);

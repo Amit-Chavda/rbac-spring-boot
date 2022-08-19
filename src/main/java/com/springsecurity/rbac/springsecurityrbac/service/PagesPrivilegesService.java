@@ -2,6 +2,7 @@ package com.springsecurity.rbac.springsecurityrbac.service;
 
 import com.springsecurity.rbac.springsecurityrbac.entity.security.PagesPrivileges;
 import com.springsecurity.rbac.springsecurityrbac.repository.PagesPrivilegesRepository;
+import com.springsecurity.rbac.springsecurityrbac.util.Console;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -16,9 +17,9 @@ public class PagesPrivilegesService {
         this.pagesPrivilegesRepository = pagesPrivilegesRepository;
     }
 
-    public PagesPrivileges add(PagesPrivileges pagesPrivileges) {
-        String pageName = pagesPrivileges.getPrivilege().getName();
-        String privilegeName = pagesPrivileges.getPage().getName();
+    public PagesPrivileges addOrGet(PagesPrivileges pagesPrivileges) {
+        String privilegeName = pagesPrivileges.getPrivilege().getName();
+        String pageName = pagesPrivileges.getPage().getName();
         if (pagesPrivilegesRepository.existsByName(privilegeName, pageName)) {
             return pagesPrivilegesRepository.findByName(privilegeName, pageName);
         }
@@ -26,11 +27,11 @@ public class PagesPrivilegesService {
     }
 
     public PagesPrivileges findByName(PagesPrivileges pagesPrivileges) throws NoSuchElementException {
-        String pageName = pagesPrivileges.getPrivilege().getName();
-        String privilegeName = pagesPrivileges.getPage().getName();
+        String privilegeName = pagesPrivileges.getPrivilege().getName();
+        String pageName = pagesPrivileges.getPage().getName();
         if (pagesPrivilegesRepository.existsByName(privilegeName, pageName)) {
             return pagesPrivilegesRepository.findByName(privilegeName, pageName);
         }
-        throw new NoSuchElementException("No mappings found!");
+        throw new NoSuchElementException("No mappings found between page " + pageName + " and privilege " + privilegeName + "!");
     }
 }
