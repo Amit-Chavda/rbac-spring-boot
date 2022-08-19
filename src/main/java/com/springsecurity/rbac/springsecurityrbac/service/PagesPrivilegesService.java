@@ -4,9 +4,11 @@ import com.springsecurity.rbac.springsecurityrbac.entity.security.PagesPrivilege
 import com.springsecurity.rbac.springsecurityrbac.repository.PagesPrivilegesRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import javax.transaction.Transactional;
+import java.util.NoSuchElementException;
 
 @Service
+@Transactional
 public class PagesPrivilegesService {
     private PagesPrivilegesRepository pagesPrivilegesRepository;
 
@@ -14,25 +16,21 @@ public class PagesPrivilegesService {
         this.pagesPrivilegesRepository = pagesPrivilegesRepository;
     }
 
-    public Optional<PagesPrivileges> alreadyExists(PagesPrivileges pagesPrivileges) {
-        return pagesPrivilegesRepository.alreadyExists(pagesPrivileges.getPrivilege().getId(), pagesPrivileges.getPage().getId());
-
-    }
-
     public PagesPrivileges add(PagesPrivileges pagesPrivileges) {
-        Optional<PagesPrivileges> pagesPrivilegesOptional = pagesPrivilegesRepository.alreadyExists(
-                pagesPrivileges.getPrivilege().getId(),
-                pagesPrivileges.getPage().getId()
-        );
-        return pagesPrivilegesOptional.orElseGet(() -> pagesPrivilegesRepository.save(pagesPrivileges));
-    }
-
-    public PagesPrivileges findByName(PagesPrivileges pagesPrivileges) {
         String pageName = pagesPrivileges.getPrivilege().getName();
         String privilegeName = pagesPrivileges.getPage().getName();
-        if (pagesPrivilegesRepository.existByName(privilegeName, pageName)) {
+        if (pagesPrivilegesRepository.existsByName(privilegeName, pageName)) {
             return pagesPrivilegesRepository.findByName(privilegeName, pageName);
         }
         return pagesPrivilegesRepository.save(pagesPrivileges);
+    }
+
+    public PagesPrivileges findByName(PagesPrivileges pagesPrivileges) throws NoSuchElementException {
+        String pageName = pagesPrivileges.getPrivilege().getName();
+        String privilegeName = pagesPrivileges.getPage().getName();
+        if (pagesPrivilegesRepository.existsByName(privilegeName, pageName)) {
+            return pagesPrivilegesRepository.findByName(privilegeName, pageName);
+        }
+        throw new NoSuchElementException("No mappings found!");
     }
 }

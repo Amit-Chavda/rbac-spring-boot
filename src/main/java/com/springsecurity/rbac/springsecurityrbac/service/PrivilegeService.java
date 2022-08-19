@@ -6,11 +6,13 @@ import com.springsecurity.rbac.springsecurityrbac.mapper.PrivilegeMapper;
 import com.springsecurity.rbac.springsecurityrbac.repository.PrivilegeRepository;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class PrivilegeService {
 
 
@@ -25,12 +27,16 @@ public class PrivilegeService {
         return PrivilegeMapper.toPrivilegeDto(privilegeOptional.orElseThrow(
                 () -> new NoSuchElementException("Privilege with name " + name + " not found")
         ));
-
     }
 
     public PrivilegeDto add(PrivilegeDto privilegeDto) {
-        Privilege privilege = privilegeRepository.save(PrivilegeMapper.toPrivilege(privilegeDto));
-        return PrivilegeMapper.toPrivilegeDto(privilege);
+        return PrivilegeMapper.toPrivilegeDto(privilegeRepository.save(PrivilegeMapper.toPrivilege(privilegeDto)));
+    }
+
+    public PrivilegeDto addOrGet(PrivilegeDto privilegeDto) {
+        return PrivilegeMapper.toPrivilegeDto(privilegeRepository.findByName(privilegeDto.getName()).orElseGet(
+                () -> privilegeRepository.save(PrivilegeMapper.toPrivilege(privilegeDto))
+        ));
     }
 
     public Collection<PrivilegeDto> findAll() {
@@ -38,10 +44,9 @@ public class PrivilegeService {
     }
 
     public PrivilegeDto remove(PrivilegeDto privilegeDto) throws NoSuchElementException {
-        Optional<Privilege> privilegeOptional = privilegeRepository.findByName(privilegeDto.getName());
-        return PrivilegeMapper.toPrivilegeDto(privilegeOptional.orElseThrow(
-                () -> new NoSuchElementException("Page with name " + privilegeDto.getName() + " not found")));
+        return PrivilegeMapper.toPrivilegeDto(privilegeRepository.findByName(privilegeDto.getName()).orElseThrow(
+                () -> new NoSuchElementException("Page with name " + privilegeDto.getName() + " not found")
+        ));
     }
-
 
 }

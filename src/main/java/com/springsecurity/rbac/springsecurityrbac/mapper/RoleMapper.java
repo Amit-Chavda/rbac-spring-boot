@@ -40,6 +40,7 @@ public class RoleMapper {
 
         RoleDto roleDto = new RoleDto();
         roleDto.setName(role.getName());
+        roleDto.setCreatedAt(role.getCreatedAt());
         roleDto.setPagePrivilegeMap(pageDtoListMap);
         return roleDto;
     }
@@ -76,7 +77,7 @@ public class RoleMapper {
             rolePagesPrivileges.setRole(role);
             return rolePagesPrivileges;
         }).toList();
-
+        role.setCreatedAt(roleDto.getCreatedAt());
         role.setRolePagesPrivileges(rolePagesPrivilegesList);
         return role;
     }

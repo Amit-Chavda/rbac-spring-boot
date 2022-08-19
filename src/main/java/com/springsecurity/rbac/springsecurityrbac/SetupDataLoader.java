@@ -1,25 +1,13 @@
 package com.springsecurity.rbac.springsecurityrbac;
 
-import com.springsecurity.rbac.springsecurityrbac.dto.PageDto;
-import com.springsecurity.rbac.springsecurityrbac.dto.PrivilegeDto;
-import com.springsecurity.rbac.springsecurityrbac.dto.RoleDto;
-import com.springsecurity.rbac.springsecurityrbac.dto.UserDto;
+import com.springsecurity.rbac.springsecurityrbac.dto.*;
 import com.springsecurity.rbac.springsecurityrbac.entity.contsants.PAGE;
 import com.springsecurity.rbac.springsecurityrbac.entity.contsants.PRIVILEGE;
-import com.springsecurity.rbac.springsecurityrbac.dto.AssignRole;
-import com.springsecurity.rbac.springsecurityrbac.entity.security.Page;
-import com.springsecurity.rbac.springsecurityrbac.entity.security.Privilege;
-import com.springsecurity.rbac.springsecurityrbac.mapper.PageMapper;
-import com.springsecurity.rbac.springsecurityrbac.mapper.PrivilegeMapper;
-import com.springsecurity.rbac.springsecurityrbac.service.PageService;
-import com.springsecurity.rbac.springsecurityrbac.service.PrivilegeService;
-import com.springsecurity.rbac.springsecurityrbac.service.RoleService;
-import com.springsecurity.rbac.springsecurityrbac.service.UserService;
+import com.springsecurity.rbac.springsecurityrbac.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
@@ -36,36 +24,38 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
     private RoleService roleService;
 
-    private PasswordEncoder passwordEncoder;
+    private UserRoleService userRoleService;
 
-    public SetupDataLoader(PrivilegeService privilegeService, UserService userService, PageService pageService, RoleService roleService, PasswordEncoder passwordEncoder) {
+    public SetupDataLoader(PrivilegeService privilegeService, UserService userService,
+                           PageService pageService, RoleService roleService,
+                           UserRoleService userRoleService) {
         this.privilegeService = privilegeService;
         this.userService = userService;
         this.pageService = pageService;
         this.roleService = roleService;
-        this.passwordEncoder = passwordEncoder;
+        this.userRoleService = userRoleService;
     }
 
     @Override
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) {
 
- /*       //setup default privileges
-        privilegeService.save(new Privilege(PRIVILEGE.READ));
-        privilegeService.save(new Privilege(PRIVILEGE.WRITE));
-        privilegeService.save(new Privilege(PRIVILEGE.UPDATE));
-        privilegeService.save(new Privilege(PRIVILEGE.DELETE));
+        //setup default privileges
+        privilegeService.addOrGet(new PrivilegeDto(PRIVILEGE.READ));
+        privilegeService.addOrGet(new PrivilegeDto(PRIVILEGE.WRITE));
+        privilegeService.addOrGet(new PrivilegeDto(PRIVILEGE.UPDATE));
+        privilegeService.addOrGet(new PrivilegeDto(PRIVILEGE.DELETE));
 
         //setup default pages
-        pageService.save(new Page(PAGE.USER));
-        pageService.save(new Page(PAGE.ROLE));
-        pageService.save(new Page(PAGE.PRODUCT));*/
-
+        pageService.addOrGet(new PageDto(PAGE.USER));
+        pageService.addOrGet(new PageDto(PAGE.ROLE));
+        pageService.addOrGet(new PageDto(PAGE.PRODUCT));
+        pageService.addOrGet(new PageDto(PAGE.USER_ROLE));
 
         //prepare all privileges for root user
-        /*HashMap<PageDto, Collection<PrivilegeDto>> adminRole = new HashMap<>();
+        HashMap<PageDto, Collection<PrivilegeDto>> adminRole = new HashMap<>();
 
-        Collection<PrivilegeDto> prList = PrivilegeMapper.toPrivilegeDtos(privilegeService.findAll());
+        Collection<PrivilegeDto> prList = privilegeService.findAll();
 
         Collection<PageDto> pageList = pageService.findAll();
 
@@ -73,7 +63,9 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
             adminRole.put(pageDto, prList);
         }
 
-        RoleDto adminRoleDto = new RoleDto("ADMIN", adminRole);
+        RoleDto adminRoleDto = new RoleDto();
+        adminRoleDto.setName("ADMIN");
+        adminRoleDto.setPagePrivilegeMap(adminRole);
 
         try {
             roleService.createRole(adminRoleDto);
@@ -104,11 +96,11 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         assignRole.setRoleNames(new ArrayList<>(Collections.singleton(adminRoleDto.getName())));
 
         try {
-            roleService.assignRole(assignRole);
+            userRoleService.assignRole(assignRole);
         } catch (Exception e) {
             logger.error(e.toString());
         }
-    }*/
     }
+
 }
 

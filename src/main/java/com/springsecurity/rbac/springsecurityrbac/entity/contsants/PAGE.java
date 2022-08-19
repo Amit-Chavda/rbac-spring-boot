@@ -5,5 +5,6 @@ public class PAGE {
 
     public static final String USER = "USER";
     public static final String PRODUCT = "PRODUCT";
+    public static final String USER_ROLE = "USER_ROLE";
 
 }

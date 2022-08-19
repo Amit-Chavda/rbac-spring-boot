@@ -5,29 +5,18 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
 @Repository
 public interface PagesPrivilegesRepository extends JpaRepository<PagesPrivileges, Long> {
 
 
     @Query(
-            value = "SELECT ppr from PagesPrivileges as ppr "
-                    + "JOIN FETCH ppr.privilege pr "
-                    + "JOIN FETCH ppr.page pg "
-                    + "where pr.id = ?1 "
-                    + "and pg.id = ?2 "
-    )
-    Optional<PagesPrivileges> alreadyExists(long privilegeId, long pageId);
-
-    @Query(
-            value = "SELECT ppr from PagesPrivileges as ppr "
-                    + "JOIN FETCH ppr.privilege pr "
-                    + "JOIN FETCH ppr.page pg "
+            value = "SELECT case when (count(ppr)>0) then true else false end from PagesPrivileges as ppr "
+                    + "JOIN ppr.privilege pr "
+                    + "JOIN ppr.page pg "
                     + "where pr.name = ?1 "
                     + "and pg.name = ?2 "
     )
-    boolean existByName(String privilegeName, String pageName);
+    boolean existsByName(String privilegeName, String pageName);
 
     @Query(
             value = "SELECT ppr from PagesPrivileges as ppr "

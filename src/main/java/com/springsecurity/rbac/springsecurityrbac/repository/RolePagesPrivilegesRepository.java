@@ -17,4 +17,23 @@ public interface RolePagesPrivilegesRepository extends JpaRepository<RolePagesPr
                     + "and pp.id = ?2 "
     )
     Optional<RolePagesPrivileges> alreadyExists(Long id, long id1);
+
+    @Query(
+            value = "SELECT case when(count(rp)>0) then true else false end from RolePagesPrivileges as rp "
+                    + "JOIN rp.role rl "
+                    + "JOIN rp.pagesPrivileges pp "
+                    + "where rl.id = ?1 "
+                    + "and pp.id = ?2 "
+    )
+    boolean existById(Long roleId, long pagesPrivilegesId);
+
+    @Query(
+            value = "SELECT rp from RolePagesPrivileges as rp "
+                    + "JOIN FETCH rp.role rl "
+                    + "JOIN FETCH rp.pagesPrivileges pp "
+                    + "where rl.id = ?1 "
+                    + "and pp.id = ?2 "
+    )
+    RolePagesPrivileges findById(Long roleId, long pagesPrivilegesId);
+
 }

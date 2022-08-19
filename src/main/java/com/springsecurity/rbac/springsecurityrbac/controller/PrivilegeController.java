@@ -38,7 +38,7 @@ public class PrivilegeController {
     @PostMapping("/create")
     @PreAuthorize(value = "@roleChecker.check(authentication)")
     public PrivilegeDto createPrivilege(@RequestBody PrivilegeDto privilegeDto) {
-        return privilegeService.add(privilegeDto);
+        return privilegeService.addOrGet(privilegeDto);
     }
 
     @DeleteMapping("/remove")

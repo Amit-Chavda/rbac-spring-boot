@@ -5,18 +5,18 @@ import com.springsecurity.rbac.springsecurityrbac.entity.security.RolePagesPrivi
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Collection;
 
 @Data
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 public class User {
 
     @Id
@@ -27,8 +27,9 @@ public class User {
     private String lastName;
     private String email;
     private String password;
+    private LocalDateTime createdAt;
     private boolean enabled;
-    private boolean specialPrivileges=false;
+    private boolean specialPrivileges;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -39,7 +40,7 @@ public class User {
                     name = "role_id", referencedColumnName = "id"))
     private Collection<Role> roles;
 
-    @OneToMany(mappedBy = "user", cascade = {CascadeType.MERGE, CascadeType.PERSIST,CascadeType.REFRESH})
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @LazyCollection(LazyCollectionOption.FALSE)
     private Collection<RolePagesPrivileges> rolePagesPrivileges;
 }

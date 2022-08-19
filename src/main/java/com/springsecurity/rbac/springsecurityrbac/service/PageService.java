@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.Collection;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -22,8 +21,7 @@ public class PageService {
     }
 
     public PageDto findByName(String name) throws NoSuchElementException {
-        Optional<Page> optionalPage = pageRepository.findByName(name);
-        return PageMapper.toPageDto(optionalPage.orElseThrow(
+        return PageMapper.toPageDto(pageRepository.findByName(name).orElseThrow(
                 () -> new NoSuchElementException("Page with name " + name + " not found")
         ));
     }
@@ -33,13 +31,19 @@ public class PageService {
         return PageMapper.toPageDto(page);
     }
 
+    public PageDto addOrGet(PageDto pageDto) {
+        return PageMapper.toPageDto(pageRepository.findByName(pageDto.getName()).orElseGet(
+                () -> pageRepository.save(PageMapper.toPage(pageDto))
+        ));
+    }
+
     public Collection<PageDto> findAll() {
         return PageMapper.toPageDtos(pageRepository.findAll());
     }
 
     public PageDto remove(PageDto pageDto) throws NoSuchElementException {
-        Optional<Page> pageOptional = pageRepository.findByName(pageDto.getName());
-        Page page = pageOptional.orElseThrow(() -> new NoSuchElementException("Page with name " + pageDto.getName() + " not found"));
-        return PageMapper.toPageDto(page);
+        return PageMapper.toPageDto(pageRepository.findByName(pageDto.getName()).orElseThrow(
+                () -> new NoSuchElementException("Page with name " + pageDto.getName() + " not found")
+        ));
     }
 }

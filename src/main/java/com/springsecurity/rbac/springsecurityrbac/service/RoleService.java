@@ -31,6 +31,15 @@ public class RoleService {
     private PageRepository pageRepository;
     private PrivilegeRepository privilegeRepository;
 
+    public RoleService(RoleRepository roleRepository, PagesPrivilegesService pagesPrivilegesService,
+                       RolePagesPrivilegesService rolePagesPrivilegesService,
+                       PageRepository pageRepository, PrivilegeRepository privilegeRepository) {
+        this.roleRepository = roleRepository;
+        this.pagesPrivilegesService = pagesPrivilegesService;
+        this.rolePagesPrivilegesService = rolePagesPrivilegesService;
+        this.pageRepository = pageRepository;
+        this.privilegeRepository = privilegeRepository;
+    }
 
     public Role findByName(String name) throws RoleNotFoundException {
         Optional<Role> optionalRole = Optional.ofNullable(roleRepository.findByName(name));
@@ -45,7 +54,7 @@ public class RoleService {
         return roleRepository.save(role);
     }
 
-    public RoleDto createRole(RoleDto roleDto) throws RoleAlreadyExistException {
+    public RoleDto createRole(RoleDto roleDto) throws RoleAlreadyExistException, NoSuchElementException {
 
         if (roleRepository.existsByName(roleDto.getName())) {
             throw new RoleAlreadyExistException(RoleAlreadyExistException.class.getName(),
@@ -53,25 +62,31 @@ public class RoleService {
         }
 
         Role role = save(new Role(roleDto.getName()));
-        Collection<RolePagesPrivileges> rolePagesPrivilegesList = RoleMapper.toRole(roleDto).getRolePagesPrivileges().stream().map(rolePagesPrivileges -> {
+        role.setCreatedAt(LocalDateTime.now());
+        Collection<RolePagesPrivileges> rolePagesPrivilegesList = RoleMapper.toRole(roleDto)
+                .getRolePagesPrivileges().stream()
+                .map(rolePagesPrivileges -> {
+                    //get page from database
+                    String pageName = rolePagesPrivileges.getPagesPrivileges().getPage().getName();
+                    Page page = pageRepository.findByName(pageName).orElseThrow(
+                            () -> new NoSuchElementException("Page with name " + pageName + " not found!")
+                    );
 
-            String pageName = rolePagesPrivileges.getPagesPrivileges().getPage().getName();
-            Page page = pageRepository.findByName(pageName).orElseThrow(
-                    () -> new NoSuchElementException("Page with name " + pageName + " not found!")
-            );
+                    //get privilege from database
+                    String privilegeName = rolePagesPrivileges.getPagesPrivileges().getPrivilege().getName();
+                    Privilege privilege = privilegeRepository.findByName(privilegeName).orElseThrow(
+                            () -> new NoSuchElementException("Privilege with name " + privilegeName + " not found!")
+                    );
 
-            String privilegeName = rolePagesPrivileges.getPagesPrivileges().getPrivilege().getName();
-            Privilege privilege = privilegeRepository.findByName(privilegeName).orElseThrow(
-                    () -> new NoSuchElementException("Privilege with name " + privilegeName + " not found!")
-            );
+                    //create or get pages privileges mapping
+                    PagesPrivileges pagesPrivileges = pagesPrivilegesService.findByName(new PagesPrivileges(page, privilege));
 
-            PagesPrivileges pagesPrivileges = pagesPrivilegesService.findByName(new PagesPrivileges(page, privilege));
+                    //set role
+                    rolePagesPrivileges.setPagesPrivileges(pagesPrivileges);
+                    rolePagesPrivileges.setRole(role);
+                    return rolePagesPrivilegesService.add(rolePagesPrivileges);
+                }).toList();
 
-            rolePagesPrivileges.setPagesPrivileges(pagesPrivileges);
-            rolePagesPrivileges.setRole(role);
-            return rolePagesPrivilegesService.save(rolePagesPrivileges);
-
-        }).toList();
         role.setRolePagesPrivileges(new ArrayList<>(rolePagesPrivilegesList));
         logger.info("New role with name {} is created!", role.getName());
         return RoleMapper.toRoleDto(roleRepository.save(role));
