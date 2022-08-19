@@ -19,7 +19,7 @@ public class PagesPrivilegesService {
 
     }
 
-    public PagesPrivileges save(PagesPrivileges pagesPrivileges) {
+    public PagesPrivileges add(PagesPrivileges pagesPrivileges) {
         Optional<PagesPrivileges> pagesPrivilegesOptional = pagesPrivilegesRepository.alreadyExists(
                 pagesPrivileges.getPrivilege().getId(),
                 pagesPrivileges.getPage().getId()
@@ -28,7 +28,11 @@ public class PagesPrivilegesService {
     }
 
     public PagesPrivileges findByName(PagesPrivileges pagesPrivileges) {
-        Optional<PagesPrivileges> pagesPrivilegesOptional = pagesPrivilegesRepository.existByName(pagesPrivileges.getPrivilege().getName(), pagesPrivileges.getPage().getName());
-        return pagesPrivilegesOptional.orElseGet(() -> pagesPrivilegesRepository.save(pagesPrivileges));
+        String pageName = pagesPrivileges.getPrivilege().getName();
+        String privilegeName = pagesPrivileges.getPage().getName();
+        if (pagesPrivilegesRepository.existByName(privilegeName, pageName)) {
+            return pagesPrivilegesRepository.findByName(privilegeName, pageName);
+        }
+        return pagesPrivilegesRepository.save(pagesPrivileges);
     }
 }

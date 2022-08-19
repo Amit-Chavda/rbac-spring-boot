@@ -9,18 +9,16 @@ import com.springsecurity.rbac.springsecurityrbac.mapper.PageMapper;
 import com.springsecurity.rbac.springsecurityrbac.mapper.PrivilegeMapper;
 import com.springsecurity.rbac.springsecurityrbac.mapper.RoleMapper;
 import com.springsecurity.rbac.springsecurityrbac.mapper.UserMapper;
+import com.springsecurity.rbac.springsecurityrbac.repository.PageRepository;
+import com.springsecurity.rbac.springsecurityrbac.repository.PrivilegeRepository;
 import com.springsecurity.rbac.springsecurityrbac.repository.RoleRepository;
-import com.springsecurity.rbac.springsecurityrbac.util.Console;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class RoleService {
@@ -30,20 +28,22 @@ public class RoleService {
 
     private final UserService userService;
 
-    private final PageService pageService;
-    private final PrivilegeService privilegeService;
     private final PagesPrivilegesService pagesPrivilegesService;
 
     private final RolePagesPrivilegesService rolePagesPrivilegesService;
 
-    public RoleService(RoleRepository roleRepository, UserService userService, PageService pageService, PrivilegeService privilegeService,
-                       PagesPrivilegesService pagesPrivilegesService, RolePagesPrivilegesService rolePagesPrivilegesService) {
+    private PageRepository pageRepository;
+    private PrivilegeRepository privilegeRepository;
+
+    public RoleService(RoleRepository roleRepository, UserService userService, PagesPrivilegesService pagesPrivilegesService,
+                       RolePagesPrivilegesService rolePagesPrivilegesService, PageRepository pageRepository,
+                       PrivilegeRepository privilegeRepository) {
         this.roleRepository = roleRepository;
         this.userService = userService;
-        this.pageService = pageService;
-        this.privilegeService = privilegeService;
         this.pagesPrivilegesService = pagesPrivilegesService;
         this.rolePagesPrivilegesService = rolePagesPrivilegesService;
+        this.pageRepository = pageRepository;
+        this.privilegeRepository = privilegeRepository;
     }
 
     public Role findByName(String name) throws RoleNotFoundException {
@@ -69,10 +69,17 @@ public class RoleService {
         Role role = save(new Role(roleDto.getName()));
         Collection<RolePagesPrivileges> rolePagesPrivilegesList = RoleMapper.toRole(roleDto).getRolePagesPrivileges().stream().map(rolePagesPrivileges -> {
 
-            Page page = pageService.save(rolePagesPrivileges.getPagesPrivileges().getPage());
-            Privilege privilege = privilegeService.save(rolePagesPrivileges.getPagesPrivileges().getPrivilege());
+            String pageName = rolePagesPrivileges.getPagesPrivileges().getPage().getName();
+            Page page = pageRepository.findByName(pageName).orElseThrow(
+                    () -> new NoSuchElementException("Page with name " + pageName + " not found!")
+            );
 
-            PagesPrivileges pagesPrivileges = pagesPrivilegesService.save(new PagesPrivileges(page, privilege));
+            String privilegeName = rolePagesPrivileges.getPagesPrivileges().getPrivilege().getName();
+            Privilege privilege = privilegeRepository.findByName(privilegeName).orElseThrow(
+                    () -> new NoSuchElementException("Privilege with name " + privilegeName + " not found!")
+            );
+
+            PagesPrivileges pagesPrivileges = pagesPrivilegesService.findByName(new PagesPrivileges(page, privilege));
 
             rolePagesPrivileges.setPagesPrivileges(pagesPrivileges);
             rolePagesPrivileges.setRole(role);

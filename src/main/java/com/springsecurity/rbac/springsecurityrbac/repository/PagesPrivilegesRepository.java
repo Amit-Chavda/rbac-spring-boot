@@ -27,5 +27,14 @@ public interface PagesPrivilegesRepository extends JpaRepository<PagesPrivileges
                     + "where pr.name = ?1 "
                     + "and pg.name = ?2 "
     )
-    Optional<PagesPrivileges> existByName(String privilegeName,String pageName);
+    boolean existByName(String privilegeName, String pageName);
+
+    @Query(
+            value = "SELECT ppr from PagesPrivileges as ppr "
+                    + "JOIN FETCH ppr.privilege pr "
+                    + "JOIN FETCH ppr.page pg "
+                    + "where pr.name = ?1 "
+                    + "and pg.name = ?2 "
+    )
+    PagesPrivileges findByName(String privilegeName, String pageName);
 }

@@ -50,7 +50,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) {
 
-        //setup default privileges
+ /*       //setup default privileges
         privilegeService.save(new Privilege(PRIVILEGE.READ));
         privilegeService.save(new Privilege(PRIVILEGE.WRITE));
         privilegeService.save(new Privilege(PRIVILEGE.UPDATE));
@@ -59,7 +59,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         //setup default pages
         pageService.save(new Page(PAGE.USER));
         pageService.save(new Page(PAGE.ROLE));
-        pageService.save(new Page(PAGE.PRODUCT));
+        pageService.save(new Page(PAGE.PRODUCT));*/
 
 
         //prepare all privileges for root user
@@ -67,7 +67,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
         Collection<PrivilegeDto> prList = PrivilegeMapper.toPrivilegeDtos(privilegeService.findAll());
 
-        Collection<PageDto> pageList = PageMapper.toPageDtos(pageService.findAll());
+        Collection<PageDto> pageList = pageService.findAll();
 
         for (PageDto pageDto : pageList) {
             adminRole.put(pageDto, prList);

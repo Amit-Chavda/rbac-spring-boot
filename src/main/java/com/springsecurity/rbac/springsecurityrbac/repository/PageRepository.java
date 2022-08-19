@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface PageRepository extends JpaRepository<Page, Long> {
     Optional<Page> findByName(String name);
+
+    boolean existsByName(String name);
 }
