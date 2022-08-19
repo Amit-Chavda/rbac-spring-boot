@@ -33,10 +33,6 @@ public class PageService {
         return PageMapper.toPageDto(page);
     }
 
-    public boolean existByName(String name) {
-        return pageRepository.existsByName(name);
-    }
-
     public Collection<PageDto> findAll() {
         return PageMapper.toPageDtos(pageRepository.findAll());
     }

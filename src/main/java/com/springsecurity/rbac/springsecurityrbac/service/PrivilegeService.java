@@ -1,10 +1,13 @@
 package com.springsecurity.rbac.springsecurityrbac.service;
 
+import com.springsecurity.rbac.springsecurityrbac.dto.PrivilegeDto;
 import com.springsecurity.rbac.springsecurityrbac.entity.security.Privilege;
+import com.springsecurity.rbac.springsecurityrbac.mapper.PrivilegeMapper;
 import com.springsecurity.rbac.springsecurityrbac.repository.PrivilegeRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -17,16 +20,28 @@ public class PrivilegeService {
         this.privilegeRepository = privilegeRepository;
     }
 
-    public Optional<Privilege> findByName(String name) {
-        return privilegeRepository.findByName(name);
+    public PrivilegeDto findByName(String name) {
+        Optional<Privilege> privilegeOptional = privilegeRepository.findByName(name);
+        return PrivilegeMapper.toPrivilegeDto(privilegeOptional.orElseThrow(
+                () -> new NoSuchElementException("Privilege with name " + name + " not found")
+        ));
+
     }
 
-    public Privilege save(Privilege privilege) {
-        Optional<Privilege> privilegeOptional = findByName(privilege.getName());
-        return privilegeOptional.orElseGet(() -> privilegeRepository.save(privilege));
+    public PrivilegeDto add(PrivilegeDto privilegeDto) {
+        Privilege privilege = privilegeRepository.save(PrivilegeMapper.toPrivilege(privilegeDto));
+        return PrivilegeMapper.toPrivilegeDto(privilege);
     }
 
-    public List<Privilege> findAll() {
-        return privilegeRepository.findAll();
+    public Collection<PrivilegeDto> findAll() {
+        return PrivilegeMapper.toPrivilegeDtos(privilegeRepository.findAll());
     }
+
+    public PrivilegeDto remove(PrivilegeDto privilegeDto) throws NoSuchElementException {
+        Optional<Privilege> privilegeOptional = privilegeRepository.findByName(privilegeDto.getName());
+        return PrivilegeMapper.toPrivilegeDto(privilegeOptional.orElseThrow(
+                () -> new NoSuchElementException("Page with name " + privilegeDto.getName() + " not found")));
+    }
+
+
 }
