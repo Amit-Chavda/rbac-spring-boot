@@ -63,7 +63,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
 
 
         //prepare all privileges for root user
-        HashMap<PageDto, Collection<PrivilegeDto>> adminRole = new HashMap<>();
+        /*HashMap<PageDto, Collection<PrivilegeDto>> adminRole = new HashMap<>();
 
         Collection<PrivilegeDto> prList = PrivilegeMapper.toPrivilegeDtos(privilegeService.findAll());
 
@@ -108,6 +108,7 @@ public class SetupDataLoader implements ApplicationListener<ContextRefreshedEven
         } catch (Exception e) {
             logger.error(e.toString());
         }
+    }*/
     }
 }
 

@@ -50,47 +50,6 @@ public class RoleController {
         }
     }
 
-    @PostMapping("/assignRole")
-    @PreAuthorize(value = "@roleChecker.check(authentication)")
-    public UserDto assignRole(@RequestBody AssignRole assignRole) {
-        try {
-            return roleService.assignRole(assignRole);
-        } catch (RoleNotFoundException | UsernameNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
-    }
-
-    @PostMapping("/extendRole")
-    @PreAuthorize(value = "@roleChecker.check(authentication)")
-    public ExtendRole extendRole(@RequestBody ExtendRole extendRole) {
-
-        try {
-            return roleService.extendRole(extendRole);
-        } catch (UsernameNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
-    }
-
-    @PutMapping("/revokeExtendedPrivileges")
-    @PreAuthorize(value = "@roleChecker.check(authentication)")
-    public RevokeExtendPrivilege revokeExtendedPrivileges(@RequestBody RevokeExtendPrivilege revokeExtendPrivilege) {
-        try {
-            return roleService.revokeExtendedPrivileges(revokeExtendPrivilege);
-        } catch (UsernameNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
-    }
-
-    @PutMapping("/revokeRole")
-    @PreAuthorize(value = "@roleChecker.check(authentication)")
-    public UserDto revokeRole(@RequestBody RevokeRole revokeRole) {
-        try {
-            return roleService.revokeRole(revokeRole);
-        } catch (RoleNotFoundException | UsernameNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
-    }
-
     @PutMapping("/update")
     @PreAuthorize(value = "@roleChecker.check(authentication)")
     public RoleDto updateRole(@RequestBody RoleDto roleDto) {
