@@ -79,8 +79,7 @@ public class UserRoleService {
 
         user.setRoles(roleCollection);
         logger.info("Role(s) {} revoked from user {}", revokeRole.getRoleNames(), revokeRole.getUsername());
-        User user1=userRepository.save(user);
-        Console.println(user1.isSpecialPrivileges()+"............",UserRoleService.class);
+        User user1 = userRepository.save(user);
         return UserMapper.toUserDto(user1);
     }
 
@@ -112,7 +111,7 @@ public class UserRoleService {
             PagesPrivileges pagesPrivileges = pagesPrivilegesRepository.findByName(privilegeName, pageName);
 
             rolePagesPrivileges.setPagesPrivileges(pagesPrivileges);
-            rolePagesPrivilegesList.add(rolePagesPrivilegesService.add(rolePagesPrivileges));
+            rolePagesPrivilegesList.add(rolePagesPrivilegesService.addSpecialPrivileges(rolePagesPrivileges));
             rolePagesPrivileges.setUser(user);
         });
 

@@ -25,6 +25,10 @@ public class RolePagesPrivilegesService {
         return rolePagesPrivilegesRepository.save(rolePagesPrivileges);
     }
 
+    public RolePagesPrivileges addSpecialPrivileges(RolePagesPrivileges rolePagesPrivileges) {
+        return rolePagesPrivilegesRepository.save(rolePagesPrivileges);
+    }
+
     public void delete(RolePagesPrivileges rolePagesPrivileges) {
         rolePagesPrivilegesRepository.delete(rolePagesPrivileges);
     }
