@@ -2,7 +2,6 @@ package com.springsecurity.rbac.springsecurityrbac.service;
 
 import com.springsecurity.rbac.springsecurityrbac.entity.security.PagesPrivileges;
 import com.springsecurity.rbac.springsecurityrbac.repository.PagesPrivilegesRepository;
-import com.springsecurity.rbac.springsecurityrbac.util.Console;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
