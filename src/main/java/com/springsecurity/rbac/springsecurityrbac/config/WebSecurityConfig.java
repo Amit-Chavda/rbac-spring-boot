@@ -33,7 +33,7 @@ public class WebSecurityConfig {
         http.cors().disable().csrf().disable();
 
         http.authorizeHttpRequests()
-                .antMatchers("/token").permitAll()
+                .antMatchers("/token", "/api-docs/**","/v3/**").permitAll()
                 .anyRequest().authenticated();
 
         http.sessionManagement()
