@@ -44,9 +44,11 @@ public class PrivilegeService {
     }
 
     public PrivilegeDto remove(PrivilegeDto privilegeDto) throws NoSuchElementException {
-        return PrivilegeMapper.toPrivilegeDto(privilegeRepository.findByName(privilegeDto.getName()).orElseThrow(
-                () -> new NoSuchElementException("Page with name " + privilegeDto.getName() + " not found")
-        ));
+        Privilege privilege = privilegeRepository.findByName(privilegeDto.getName()).orElseThrow(
+                () -> new NoSuchElementException("Privilege with name " + privilegeDto.getName() + " not found")
+        );
+        privilegeRepository.delete(privilege);
+        return PrivilegeMapper.toPrivilegeDto(privilege);
     }
 
 }

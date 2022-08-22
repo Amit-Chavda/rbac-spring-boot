@@ -42,8 +42,10 @@ public class PageService {
     }
 
     public PageDto remove(PageDto pageDto) throws NoSuchElementException {
-        return PageMapper.toPageDto(pageRepository.findByName(pageDto.getName()).orElseThrow(
+        Page page = pageRepository.findByName(pageDto.getName()).orElseThrow(
                 () -> new NoSuchElementException("Page with name " + pageDto.getName() + " not found")
-        ));
+        );
+        pageRepository.delete(page);
+        return pageDto;
     }
 }
