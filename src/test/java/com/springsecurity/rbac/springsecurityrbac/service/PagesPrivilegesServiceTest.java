@@ -6,6 +6,7 @@ import com.springsecurity.rbac.springsecurityrbac.entity.security.Page;
 import com.springsecurity.rbac.springsecurityrbac.entity.security.PagesPrivileges;
 import com.springsecurity.rbac.springsecurityrbac.entity.security.Privilege;
 import com.springsecurity.rbac.springsecurityrbac.repository.PagesPrivilegesRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.NoSuchElementException;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -27,38 +28,39 @@ class PagesPrivilegesServiceTest {
     @InjectMocks
     private PagesPrivilegesService pagesPrivilegesService;
 
+    private PagesPrivileges pagesPrivileges;
+    private Page page;
+    private Privilege privilege;
+
+    @BeforeEach
+    void setup() {
+        page = new Page(PAGE.PRODUCT);
+        privilege = new Privilege(PRIVILEGE.READ);
+
+        pagesPrivileges = new PagesPrivileges();
+        pagesPrivileges.setPage(page);
+        pagesPrivileges.setPrivilege(privilege);
+
+    }
+
+
     /**
      * Method under test: {@link PagesPrivilegesService#addOrGet(PagesPrivileges)}
      */
     @Test
     void testAddOrGet() {
-        Page page = new Page(PAGE.PRODUCT);
-        Privilege privilege = new Privilege(PRIVILEGE.READ);
-
-        PagesPrivileges pagesPrivileges = new PagesPrivileges();
-        pagesPrivileges.setPage(page);
-        pagesPrivileges.setPrivilege(privilege);
+        //Arrange
         when(pagesPrivilegesRepository.existsByName(privilege.getName(), page.getName())).thenReturn(true);
         when(pagesPrivilegesRepository.findByName(privilege.getName(), page.getName())).thenReturn(pagesPrivileges);
 
         // Act
-        PagesPrivileges actualAddOrGetResult = this.pagesPrivilegesService.addOrGet(pagesPrivileges);
+        PagesPrivileges actualAddOrGetResult = pagesPrivilegesService.addOrGet(pagesPrivileges);
 
         // Assert
         verify(pagesPrivilegesRepository, times(1)).existsByName(privilege.getName(), page.getName());
         verify(pagesPrivilegesRepository, times(1)).findByName(privilege.getName(), page.getName());
 
-        assertThat(actualAddOrGetResult)
-                .isNotNull()
-                .isEqualTo(pagesPrivileges);
-
-        assertThat(actualAddOrGetResult.getPrivilege())
-                .isNotNull()
-                .isEqualTo(privilege);
-
-        assertThat(actualAddOrGetResult.getPage())
-                .isNotNull()
-                .isEqualTo(page);
+        assertEquals(actualAddOrGetResult, pagesPrivileges);
     }
 
 
@@ -67,12 +69,7 @@ class PagesPrivilegesServiceTest {
      */
     @Test
     void testAddOrGet2() {
-        Page page = new Page(PAGE.PRODUCT);
-        Privilege privilege = new Privilege(PRIVILEGE.READ);
-
-        PagesPrivileges pagesPrivileges = new PagesPrivileges();
-        pagesPrivileges.setPage(page);
-        pagesPrivileges.setPrivilege(privilege);
+        //Arrange
         when(pagesPrivilegesRepository.existsByName(privilege.getName(), page.getName())).thenReturn(false);
         when(pagesPrivilegesRepository.save(pagesPrivileges)).thenReturn(pagesPrivileges);
 
@@ -83,17 +80,7 @@ class PagesPrivilegesServiceTest {
         verify(pagesPrivilegesRepository, times(1)).existsByName(privilege.getName(), page.getName());
         verify(pagesPrivilegesRepository, times(1)).save(pagesPrivileges);
 
-        assertThat(actualAddOrGetResult)
-                .isNotNull()
-                .isEqualTo(pagesPrivileges);
-
-        assertThat(actualAddOrGetResult.getPrivilege())
-                .isNotNull()
-                .isEqualTo(privilege);
-
-        assertThat(actualAddOrGetResult.getPage())
-                .isNotNull()
-                .isEqualTo(page);
+        assertEquals(actualAddOrGetResult, pagesPrivileges);
     }
 
     /**
@@ -102,12 +89,6 @@ class PagesPrivilegesServiceTest {
     @Test
     void testFindByName() throws NoSuchElementException {
         // Arrange
-        Page page = new Page(PAGE.PRODUCT);
-        Privilege privilege = new Privilege(PRIVILEGE.READ);
-
-        PagesPrivileges pagesPrivileges = new PagesPrivileges();
-        pagesPrivileges.setPage(page);
-        pagesPrivileges.setPrivilege(privilege);
         when(pagesPrivilegesRepository.existsByName(privilege.getName(), page.getName())).thenReturn(true);
         when(pagesPrivilegesRepository.findByName(privilege.getName(), page.getName())).thenReturn(pagesPrivileges);
 
@@ -118,18 +99,7 @@ class PagesPrivilegesServiceTest {
         verify(pagesPrivilegesRepository, times(1)).existsByName(privilege.getName(), page.getName());
         verify(pagesPrivilegesRepository, times(1)).findByName(privilege.getName(), page.getName());
 
-        assertThat(actualFindByNameResult)
-                .isNotNull()
-                .isEqualTo(pagesPrivileges);
-
-        assertThat(actualFindByNameResult.getPrivilege())
-                .isNotNull()
-                .isEqualTo(privilege);
-
-        assertThat(actualFindByNameResult.getPage())
-                .isNotNull()
-                .isEqualTo(page);
-
+        assertEquals(actualFindByNameResult, pagesPrivileges);
     }
 
     /**
@@ -138,19 +108,11 @@ class PagesPrivilegesServiceTest {
     @Test
     void testFindByName2() throws NoSuchElementException {
         // Arrange
-        Page page = new Page(PAGE.PRODUCT);
-        Privilege privilege = new Privilege(PRIVILEGE.READ);
-
-        PagesPrivileges pagesPrivileges = new PagesPrivileges();
-        pagesPrivileges.setPage(page);
-        pagesPrivileges.setPrivilege(privilege);
-
         when(pagesPrivilegesRepository.existsByName(privilege.getName(), page.getName())).thenReturn(false);
 
 
-        // Act // Assert
+        // Act and Assert
         assertThrows(NoSuchElementException.class, () -> this.pagesPrivilegesService.findByName(pagesPrivileges));
-
         verify(pagesPrivilegesRepository, times(1)).existsByName(privilege.getName(), page.getName());
     }
 }

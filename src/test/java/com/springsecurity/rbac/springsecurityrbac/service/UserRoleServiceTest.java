@@ -21,8 +21,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserRoleServiceTest {
@@ -78,9 +78,6 @@ class UserRoleServiceTest {
     @Test
     void testAssignRole() throws RoleNotFoundException, UsernameNotFoundException {
         // Arrange
-        String roleName = "ADMIN";
-        String username = "test@test.com";
-
         AssignRole assignRole = new AssignRole();
         assignRole.setUsername(username);
         assignRole.setRoleNames(List.of(roleName));
@@ -99,9 +96,7 @@ class UserRoleServiceTest {
         verify(userRepository, times(1)).findByEmail(username);
         verify(userRepository, times(1)).save(user);
 
-        assertThat(actualAssignRoleResult)
-                .isNotNull()
-                .isEqualTo(userDto);
+        assertThat(actualAssignRoleResult).isEqualTo(userDto);
     }
 
 
@@ -111,15 +106,12 @@ class UserRoleServiceTest {
     @Test
     void testAssignRole2() throws RoleNotFoundException, UsernameNotFoundException {
         // Arrange
-        String roleName = "ADMIN";
-        String username = "test@test.com";
         AssignRole assignRole = new AssignRole();
         assignRole.setUsername(username);
         assignRole.setRoleNames(List.of(roleName));
 
         UsernameNotFoundException usernameNotFoundException = new
                 UsernameNotFoundException("User with email " + assignRole.getUsername() + " does not exists!");
-
         when(roleRepository.findByName(roleName)).thenThrow(usernameNotFoundException);
 
         // Act
@@ -136,21 +128,14 @@ class UserRoleServiceTest {
     @Test
     void testRevokeRole() {
         // Arrange
-        User expectedResult = new User();
-        expectedResult.setFirstName("firstname");
-        expectedResult.setLastName("lastname");
-        expectedResult.setPassword("password");
-        expectedResult.setEmail("test@test.com");
-        expectedResult.setEnabled(true);
-        expectedResult.setSpecialPrivileges(false);
+        RevokeRole revokeRole = new RevokeRole(username, List.of(roleName));
 
-        UserDto expectedUserDto = UserMapper.toUserDto(expectedResult);
-
+        UserDto expectedUserDto = UserMapper.toUserDto(user);
+        expectedUserDto.setRoles(Collections.emptyList());
         when(roleRepository.findByName(roleName)).thenReturn(role);
         when(userRepository.findByEmail(username)).thenReturn(Optional.of(user));
-        when(userRepository.save(user)).thenReturn(expectedResult);
+        when(userRepository.save(user)).thenReturn(user);
 
-        RevokeRole revokeRole = new RevokeRole(username, List.of(roleName));
 
         // Act
         UserDto actualRevokeRoleResult = this.userRoleService.revokeRole(revokeRole);
@@ -159,10 +144,9 @@ class UserRoleServiceTest {
         verify(roleRepository, times(1)).findByName(roleName);
         verify(userRepository, times(1)).findByEmail(username);
         verify(userRepository, times(1)).save(user);
+        verifyNoMoreInteractions(userRepository, roleRepository);
 
-        assertThat(actualRevokeRoleResult)
-                .isNotNull()
-                .isEqualTo(expectedUserDto);
+        assertThat(actualRevokeRoleResult).isEqualTo(expectedUserDto);
     }
 
     /**
@@ -174,18 +158,13 @@ class UserRoleServiceTest {
         RevokeRole revokeRole = new RevokeRole(username, List.of(roleName));
         UsernameNotFoundException usernameNotFoundException = new
                 UsernameNotFoundException("User with email " + revokeRole.getUsername() + " does not exists!");
-
         when(userRepository.findByEmail(username)).thenThrow(usernameNotFoundException);
 
-        // Act
+        // Act and Assert
         assertThrows(UsernameNotFoundException.class, () -> this.userRoleService.revokeRole(revokeRole));
-
-        // Assert
         verify(userRepository, times(1)).findByEmail(username);
         verifyNoMoreInteractions(userRepository);
         verifyNoInteractions(roleRepository, pagesPrivilegesRepository, rolePagesPrivilegesService);
-
-
     }
 
     /**
@@ -228,11 +207,7 @@ class UserRoleServiceTest {
         verify(userRepository, times(1)).findByEmail(username);
         verify(pagesPrivilegesRepository, times(1)).findByName(privilegeName, pageName);
         verify(userRepository, times(1)).save(user1);
-
-        assertThat(actualExtendRoleResult)
-                .isNotNull()
-                .isEqualTo(extendRole);
-
+        assertThat(actualExtendRoleResult).isEqualTo(extendRole);
 
     }
 
@@ -243,25 +218,17 @@ class UserRoleServiceTest {
     @Test
     void testExtendRole2() throws UsernameNotFoundException {
         // Arrange
-        String pageName = PAGE.ROLE;
-        String privilegeName = PRIVILEGE.READ;
-
-        ExtendRole extendRole = new ExtendRole();
-        extendRole.setUsername(username);
-
+        ExtendRole extendRole = new ExtendRole(username, Collections.emptyList());
         UsernameNotFoundException usernameNotFoundException = new
                 UsernameNotFoundException("User with email " + extendRole.getUsername() + " does not exists!");
-
         when(userRepository.findByEmail(username)).thenThrow(usernameNotFoundException);
 
-        // Act
+        // Act and Assert
         assertThrows(UsernameNotFoundException.class, () -> this.userRoleService.extendRole(extendRole));
 
-        // Assert
         verify(userRepository, times(1)).findByEmail(username);
         verifyNoMoreInteractions(userRepository);
         verifyNoInteractions(pagesPrivilegesRepository, roleRepository, rolePagesPrivilegesService);
-
     }
 
     /**
@@ -270,23 +237,14 @@ class UserRoleServiceTest {
     @Test
     void testExtendRole3() throws UsernameNotFoundException {
         // Arrange
-        String pageName = PAGE.ROLE;
-        String privilegeName = PRIVILEGE.READ;
-
-        ExtendRole extendRole = new ExtendRole();
-        extendRole.setUsername(username);
-
+        ExtendRole extendRole = new ExtendRole(username, Collections.emptyList());
         user.setRoles(null);
-
         UsernameNotFoundException usernameNotFoundException = new
                 UsernameNotFoundException("User does not have role(s) related to this privileges!");
-
         when(userRepository.findByEmail(username)).thenThrow(usernameNotFoundException);
 
-        // Act
+        // Act and Assert
         assertThrows(UsernameNotFoundException.class, () -> this.userRoleService.extendRole(extendRole));
-
-        // Assert
         verify(userRepository, times(1)).findByEmail(username);
         verifyNoMoreInteractions(userRepository);
         verifyNoInteractions(pagesPrivilegesRepository, roleRepository, rolePagesPrivilegesService);
@@ -335,10 +293,8 @@ class UserRoleServiceTest {
         verify(userRepository, times(1)).findByEmail(username);
         verify(userRepository, times(1)).save(user1);
         verify(rolePagesPrivilegesService, times(1)).deleteById(rolePagesPrivileges1.getId());
-
-        assertThat(actualRevokeExtendedPrivilegesResult)
-                .isNotNull()
-                .isEqualTo(revokeExtendPrivilege);
+        verifyNoMoreInteractions(userRepository, rolePagesPrivilegesService);
+        assertThat(actualRevokeExtendedPrivilegesResult).isEqualTo(revokeExtendPrivilege);
     }
 
     /**
@@ -347,16 +303,8 @@ class UserRoleServiceTest {
     @Test
     void testRevokeExtendedPrivileges2() throws UsernameNotFoundException {
         // Arrange
-        String pageName = PAGE.ROLE;
-        String privilegeName = PRIVILEGE.READ;
-
-
-        RevokeExtendPrivilege revokeExtendPrivilege = new RevokeExtendPrivilege();
-        revokeExtendPrivilege.setUsername(username);
-        UsernameNotFoundException usernameNotFoundException = new
-                UsernameNotFoundException("User with email " + revokeExtendPrivilege.getUsername() + " does not exists!");
-
-        when(userRepository.findByEmail(username)).thenThrow(usernameNotFoundException);
+        RevokeExtendPrivilege revokeExtendPrivilege = new RevokeExtendPrivilege(username, new HashMap<>());
+        when(userRepository.findByEmail(username)).thenReturn(Optional.empty());
 
         // Act
         assertThrows(UsernameNotFoundException.class, () -> this.userRoleService.revokeExtendedPrivileges(revokeExtendPrivilege));
@@ -365,7 +313,6 @@ class UserRoleServiceTest {
         verify(userRepository, times(1)).findByEmail(username);
         verifyNoMoreInteractions(userRepository);
         verifyNoInteractions(rolePagesPrivilegesService, roleRepository, pagesPrivilegesRepository);
-
     }
 }
 

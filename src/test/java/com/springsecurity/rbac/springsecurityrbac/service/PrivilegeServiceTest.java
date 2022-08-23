@@ -5,6 +5,7 @@ import com.springsecurity.rbac.springsecurityrbac.entity.contsants.PRIVILEGE;
 import com.springsecurity.rbac.springsecurityrbac.entity.security.Privilege;
 import com.springsecurity.rbac.springsecurityrbac.mapper.PrivilegeMapper;
 import com.springsecurity.rbac.springsecurityrbac.repository.PrivilegeRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,11 +17,10 @@ import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PrivilegeServiceTest {
@@ -30,25 +30,32 @@ class PrivilegeServiceTest {
     @InjectMocks
     private PrivilegeService privilegeService;
 
+    private String privilegeName;
+    private Privilege privilege;
+    private PrivilegeDto privilegeDto;
+
+    @BeforeEach
+    void setup() {
+        privilegeName = PRIVILEGE.READ;
+        privilege = new Privilege(privilegeName);
+        privilegeDto = new PrivilegeDto(privilegeName);
+    }
+
+
     /**
      * Method under test: {@link PrivilegeService#findByName(String)}
      */
     @Test
     void testFindByName1() {
         // Arrange
-        String privilegeName = PRIVILEGE.READ;
-        PrivilegeDto expectedFindByNameResult = new PrivilegeDto();
-        expectedFindByNameResult.setName(privilegeName);
-
-        Privilege privilege = new Privilege(privilegeName);
-
         when(privilegeRepository.findByName(privilegeName)).thenReturn(Optional.of(privilege));
 
         // Act
         PrivilegeDto actualFindByNameResult = this.privilegeService.findByName(privilegeName);
 
         // Assert
-        assertEquals(actualFindByNameResult.getName(), expectedFindByNameResult.getName());
+        verify(privilegeRepository, times(1)).findByName(privilegeName);
+        assertEquals(actualFindByNameResult.getName(), privilegeDto.getName());
     }
 
     /**
@@ -57,18 +64,11 @@ class PrivilegeServiceTest {
     @Test
     void testFindByName2() {
         // Arrange
-        String privilegeName = PRIVILEGE.READ;
-        Privilege privilege = new Privilege(privilegeName);
-
-        NoSuchElementException expectedFindByNameResult = new NoSuchElementException("Privilege with name " + PRIVILEGE.WRITE + " not found!");
-
-
-        when(privilegeRepository.findByName(anyString())).thenReturn(Optional.of(privilege));
-        when(privilegeService.findByName(anyString())).thenThrow(expectedFindByNameResult);
-
+        when(privilegeRepository.findByName(anyString())).thenReturn(Optional.empty());
 
         // Act and Assert
-        assertThrows(NoSuchElementException.class, () -> this.privilegeService.findByName(PRIVILEGE.WRITE));
+        assertThrows(NoSuchElementException.class, () -> this.privilegeService.findByName(privilegeName));
+        verify(privilegeRepository, times(1)).findByName(privilegeName);
     }
 
     /**
@@ -77,16 +77,14 @@ class PrivilegeServiceTest {
     @Test
     void testAdd() {
         // Arrange
-        PrivilegeDto expectedAddResult = new PrivilegeDto(PRIVILEGE.READ);
-        Privilege privilege = new Privilege(PRIVILEGE.READ);
         when(privilegeRepository.save(privilege)).thenReturn(privilege);
 
         // Act
-        PrivilegeDto actualAddResult = this.privilegeService.add(expectedAddResult);
+        PrivilegeDto actualAddResult = this.privilegeService.add(privilegeDto);
 
         // Assert
-        assertEquals(actualAddResult, expectedAddResult);
-        assertEquals(actualAddResult.getName(), expectedAddResult.getName());
+        verify(privilegeRepository, times(1)).save(privilege);
+        assertEquals(actualAddResult, privilegeDto);
     }
 
     /**
@@ -95,17 +93,14 @@ class PrivilegeServiceTest {
     @Test
     void testAddOrGet1() {
         // Arrange
-        PrivilegeDto expectedAddOrGetResult = new PrivilegeDto(PRIVILEGE.WRITE);
-        Privilege privilege = new Privilege(PRIVILEGE.WRITE);
-
-        when(privilegeRepository.findByName(PRIVILEGE.WRITE)).thenReturn(Optional.of(privilege));
+        when(privilegeRepository.findByName(privilegeName)).thenReturn(Optional.of(privilege));
 
         // Act
-        PrivilegeDto actualAddOrGetResult = this.privilegeService.addOrGet(expectedAddOrGetResult);
+        PrivilegeDto actualAddOrGetResult = this.privilegeService.addOrGet(privilegeDto);
 
         // Assert
-        assertEquals(actualAddOrGetResult, expectedAddOrGetResult);
-        assertEquals(actualAddOrGetResult.getName(), expectedAddOrGetResult.getName());
+        verify(privilegeRepository, times(1)).findByName(privilegeName);
+        assertEquals(actualAddOrGetResult, privilegeDto);
     }
 
     /**
@@ -114,17 +109,15 @@ class PrivilegeServiceTest {
     @Test
     void testAddOrGet2() {
         // Arrange
-        PrivilegeDto expectedAddOrGetResult = new PrivilegeDto(PRIVILEGE.WRITE);
-        Privilege privilege = new Privilege(PRIVILEGE.WRITE);
-
-        when(privilegeRepository.save(privilege)).thenReturn(privilege);
+        when(privilegeRepository.findByName(privilegeName)).thenReturn(Optional.ofNullable(privilege));
 
         // Act
-        PrivilegeDto actualAddOrGetResult = this.privilegeService.addOrGet(expectedAddOrGetResult);
+        PrivilegeDto actualAddOrGetResult = this.privilegeService.addOrGet(privilegeDto);
 
         // Assert
-        assertEquals(actualAddOrGetResult, expectedAddOrGetResult);
-        assertEquals(actualAddOrGetResult.getName(), expectedAddOrGetResult.getName());
+        verify(privilegeRepository, times(1)).findByName(privilegeName);
+        verifyNoMoreInteractions(privilegeRepository);
+        assertEquals(actualAddOrGetResult, privilegeDto);
     }
 
     /**
@@ -133,21 +126,16 @@ class PrivilegeServiceTest {
     @Test
     void testFindAll() {
         // Arrange
-        PrivilegeDto write = new PrivilegeDto(PRIVILEGE.WRITE);
-        PrivilegeDto read = new PrivilegeDto(PRIVILEGE.READ);
-        PrivilegeDto update = new PrivilegeDto(PRIVILEGE.UPDATE);
-        PrivilegeDto delete = new PrivilegeDto(PRIVILEGE.DELETE);
-        Collection<PrivilegeDto> expectedFindAllResult = Arrays.asList(read, write, update, delete);
-
+        Collection<PrivilegeDto> expectedFindAllResult = Arrays.asList(privilegeDto);
         when(privilegeRepository.findAll()).thenReturn(PrivilegeMapper.toPrivileges(expectedFindAllResult));
 
         // Act
         Collection<PrivilegeDto> actualFindAllResult = this.privilegeService.findAll();
 
         // Assert
+        verify(privilegeRepository, times(1)).findAll();
         assertEquals(actualFindAllResult, expectedFindAllResult);
         assertEquals(actualFindAllResult.size(), expectedFindAllResult.size());
-        assertEquals(actualFindAllResult.isEmpty(), expectedFindAllResult.isEmpty());
     }
 
     /**
@@ -156,21 +144,16 @@ class PrivilegeServiceTest {
     @Test
     void testRemove1() throws NoSuchElementException {
         // Arrange
-        PrivilegeDto privilegeDto = new PrivilegeDto(PRIVILEGE.READ);
-        Privilege privilege = PrivilegeMapper.toPrivilege(privilegeDto);
+        when(privilegeRepository.findByName(privilegeName)).thenReturn(Optional.of(privilege));
 
-        when(privilegeRepository.findByName(privilegeDto.getName())).thenReturn(Optional.of(privilege));
         // Act
         PrivilegeDto actualRemoveResult = this.privilegeService.remove(privilegeDto);
 
         // Assert
-        assertThat(actualRemoveResult)
-                .isEqualTo(privilegeDto)
-                .isNotNull();
-
-        assertThat(actualRemoveResult.getName())
-                .isEqualTo(privilegeDto.getName())
-                .isNotNull();
+        verify(privilegeRepository, times(1)).findByName(privilegeName);
+        verify(privilegeRepository, times(1)).delete(privilege);
+        verifyNoMoreInteractions(privilegeRepository);
+        assertEquals(actualRemoveResult, privilegeDto);
     }
 
     /**
@@ -179,13 +162,13 @@ class PrivilegeServiceTest {
     @Test
     void testRemove2() throws NoSuchElementException {
         // Arrange
-        PrivilegeDto privilegeDto = new PrivilegeDto("CREATE");
-        NoSuchElementException expectedRemoveResult = new NoSuchElementException("Privilege with name " + privilegeDto.getName() + " not found");
-        when(privilegeRepository.findByName(privilegeDto.getName())).thenThrow(expectedRemoveResult);
+        when(privilegeRepository.findByName(privilegeDto.getName())).thenReturn(Optional.empty());
 
 
         // Act and Assert
         assertThrows(NoSuchElementException.class, () -> this.privilegeService.remove(privilegeDto));
+        verify(privilegeRepository, times(1)).findByName(privilegeName);
+        verifyNoMoreInteractions(privilegeRepository);
 
     }
 }

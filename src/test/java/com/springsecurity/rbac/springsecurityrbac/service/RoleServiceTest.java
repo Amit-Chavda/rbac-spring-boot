@@ -13,6 +13,7 @@ import com.springsecurity.rbac.springsecurityrbac.mapper.PrivilegeMapper;
 import com.springsecurity.rbac.springsecurityrbac.repository.PageRepository;
 import com.springsecurity.rbac.springsecurityrbac.repository.PrivilegeRepository;
 import com.springsecurity.rbac.springsecurityrbac.repository.RoleRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,26 +49,34 @@ class RoleServiceTest {
     @InjectMocks
     private RoleService roleService;
 
+
+    private Role role;
+    private String roleName;
+
+    @BeforeEach
+    void setup() {
+        roleName = "ADMIN";
+        role = new Role();
+        role.setId(10L);
+        role.setName(roleName);
+        role.setCreatedAt(LocalDateTime.now());
+    }
+
+
     /**
      * Method under test: {@link RoleService#findByName(String)}
      */
     @Test
     void testFindByName() throws RoleNotFoundException {
         // Arrange
-        Role role = new Role();
-        role.setName("ADMIN");
-        role.setCreatedAt(LocalDateTime.now());
-        when(roleRepository.findByName(anyString())).thenReturn(role);
+        when(roleRepository.findByName(roleName)).thenReturn(role);
 
         // Act
-        Role actualFindByNameResult = this.roleService.findByName(role.getName());
+        Role actualFindByNameResult = this.roleService.findByName(roleName);
 
         // Assert
-        verify(roleRepository, times(1)).findByName(role.getName());
-
-        assertThat(actualFindByNameResult)
-                .isNotNull()
-                .isEqualTo(role);
+        verify(roleRepository, times(1)).findByName(roleName);
+        assertThat(actualFindByNameResult).isEqualTo(role);
     }
 
 
@@ -77,22 +86,15 @@ class RoleServiceTest {
     @Test
     void testFindByName2() throws RoleNotFoundException {
         // Arrange
-        Role role = new Role();
-        role.setName("SELLER");
-        role.setCreatedAt(LocalDateTime.now());
-
-        String name = role.getName();
-
         RoleNotFoundException exception = new RoleNotFoundException(RoleAlreadyExistException.class.getName(),
-                "Role " + role.getName() + " does not exist!", LocalDateTime.now());
-
-        when(roleRepository.findByName(anyString())).thenThrow(exception);
+                "Role " + roleName + " does not exist!", LocalDateTime.now());
+        when(roleRepository.findByName(roleName)).thenThrow(exception);
 
         // Act
-        assertThrows(RoleNotFoundException.class, () -> roleService.findByName(name));
+        assertThrows(RoleNotFoundException.class, () -> roleService.findByName(roleName));
 
         // Assert
-        verify(roleRepository, times(1)).findByName(role.getName());
+        verify(roleRepository, times(1)).findByName(roleName);
     }
 
     /**
@@ -110,13 +112,10 @@ class RoleServiceTest {
         privilege.setId(1L);
 
         Map<PageDto, Collection<PrivilegeDto>> map = new HashMap<>();
-        map.put(
-                pageDto,
-                List.of(privilegeDto)
-        );
+        map.put(pageDto, List.of(privilegeDto));
 
         RoleDto roleDto = new RoleDto();
-        roleDto.setName("ADMIN");
+        roleDto.setName(roleName);
         roleDto.setCreatedAt(LocalDateTime.now());
         roleDto.setPagePrivilegeMap(map);
 
@@ -127,10 +126,6 @@ class RoleServiceTest {
         pagesPrivileges.setPage(page);
         pagesPrivileges.setId(1L);
         pagesPrivileges.setRolePagesPrivileges(List.of(rolePagesPrivileges));
-
-        Role role = new Role(roleDto.getName());
-        role.setId(1L);
-
 
         rolePagesPrivileges.setPagesPrivileges(pagesPrivileges);
         rolePagesPrivileges.setRole(role);
@@ -157,9 +152,7 @@ class RoleServiceTest {
         verify(roleRepository, times(2)).save(any());
         verify(rolePagesPrivilegesService, times(1)).addOrGet(any());
         verify(pagesPrivilegesService, times(1)).addOrGet(any());
-
-        assertThat(actualCreateRoleResult)
-                .isNotNull();
+        verifyNoMoreInteractions(privilegeRepository, pageRepository, rolePagesPrivilegesService, pagesPrivilegesService);
 
         assertAll(
                 () -> assertEquals(actualCreateRoleResult.getName(), roleDto.getName()),
@@ -190,7 +183,7 @@ class RoleServiceTest {
 
         RoleDto roleDto = new RoleDto();
         roleDto.setName("ADMIN");
-        roleDto.setCreatedAt(LocalDateTime.now());
+        roleDto.setCreatedAt(role.getCreatedAt());
         roleDto.setPagePrivilegeMap(map);
 
         RolePagesPrivileges rolePagesPrivileges = new RolePagesPrivileges();
@@ -200,11 +193,6 @@ class RoleServiceTest {
         pagesPrivileges.setPage(page);
         pagesPrivileges.setId(1L);
         pagesPrivileges.setRolePagesPrivileges(List.of(rolePagesPrivileges));
-
-        Role role = new Role(roleDto.getName());
-        role.setId(1L);
-        role.setCreatedAt(LocalDateTime.now());
-
 
         rolePagesPrivileges.setPagesPrivileges(pagesPrivileges);
         rolePagesPrivileges.setRole(role);
@@ -218,10 +206,7 @@ class RoleServiceTest {
 
         // Assert
         verify(roleRepository, times(1)).findAll();
-
-        assertThat(actualFindAllResult)
-                .isNotNull()
-                .isEqualTo(List.of(roleDto));
+        assertThat(actualFindAllResult).isEqualTo(List.of(roleDto));
     }
 
     /**
@@ -247,31 +232,25 @@ class RoleServiceTest {
     @Test
     void testDelete() {
         // Arrange
-        String name = "ADMIN";
-        Role role = new Role(name);
-        role.setId(1L);
+        when(roleRepository.findByName(roleName)).thenReturn(role);
 
-        when(roleRepository.findByName(name)).thenReturn(role);
         // Act
         this.roleService.delete(role);
 
         // Assert
         verify(roleRepository, times(1)).delete(role);
-        verify(roleRepository, times(1)).findByName(name);
+        verify(roleRepository, times(1)).findByName(roleName);
     }
 
     @Test
     void testDelete2() {
         // Arrange
-        String name = "ADMIN";
-        Role role = new Role(name);
-        role.setId(1L);
-        when(roleRepository.findByName(name)).thenReturn(null);
-        // Act
-        assertThrows(RoleNotFoundException.class, () -> this.roleService.delete(role));
+        when(roleRepository.findByName(roleName)).thenReturn(null);
 
-        // Assert
-        verify(roleRepository, times(1)).findByName(name);
+        // Act and Assert
+        assertThrows(RoleNotFoundException.class, () -> this.roleService.delete(role));
+        verify(roleRepository, times(1)).findByName(roleName);
+        verifyNoMoreInteractions(roleRepository);
     }
 }
 

@@ -5,6 +5,7 @@ import com.springsecurity.rbac.springsecurityrbac.entity.contsants.PAGE;
 import com.springsecurity.rbac.springsecurityrbac.entity.contsants.PRIVILEGE;
 import com.springsecurity.rbac.springsecurityrbac.entity.security.*;
 import com.springsecurity.rbac.springsecurityrbac.repository.RolePagesPrivilegesRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 
@@ -26,26 +28,34 @@ class RolePagesPrivilegesServiceTest {
     @InjectMocks
     private RolePagesPrivilegesService rolePagesPrivilegesService;
 
+
+    private PagesPrivileges pagesPrivileges;
+    private Role role;
+    private RolePagesPrivileges rolePagesPrivileges;
+
+    @BeforeEach
+    void setup() {
+        pagesPrivileges = new PagesPrivileges();
+        pagesPrivileges.setId(1L);
+        pagesPrivileges.setPage(new Page(PAGE.USER));
+        pagesPrivileges.setPrivilege(new Privilege(PRIVILEGE.READ));
+
+        role = new Role();
+        role.setId(1L);
+        role.setCreatedAt(LocalDateTime.now());
+        role.setName("ADMIN");
+
+        rolePagesPrivileges = new RolePagesPrivileges();
+        rolePagesPrivileges.setPagesPrivileges(pagesPrivileges);
+        rolePagesPrivileges.setRole(role);
+    }
+
     /**
      * Method under test: {@link RolePagesPrivilegesService#addOrGet(RolePagesPrivileges)}
      */
     @Test
     void testAddOrGet() {
         // Arrange
-
-        PagesPrivileges pagesPrivileges = new PagesPrivileges();
-        pagesPrivileges.setId(1L);
-        pagesPrivileges.setPage(new Page(PAGE.USER));
-        pagesPrivileges.setPrivilege(new Privilege(PRIVILEGE.READ));
-
-        Role role = new Role();
-        role.setId(1L);
-        role.setCreatedAt(LocalDateTime.now());
-        role.setName("ADMIN");
-
-        RolePagesPrivileges rolePagesPrivileges = new RolePagesPrivileges();
-        rolePagesPrivileges.setPagesPrivileges(pagesPrivileges);
-        rolePagesPrivileges.setRole(role);
         when(rolePagesPrivilegesRepository.existById(role.getId(), pagesPrivileges.getId())).thenReturn(true);
         when(rolePagesPrivilegesRepository.findById(role.getId(), pagesPrivileges.getId())).thenReturn(rolePagesPrivileges);
 
@@ -55,9 +65,7 @@ class RolePagesPrivilegesServiceTest {
         // Assert
         verify(rolePagesPrivilegesRepository, times(1)).existById(role.getId(), pagesPrivileges.getId());
         verify(rolePagesPrivilegesRepository, times(1)).findById(role.getId(), pagesPrivileges.getId());
-        assertThat(actualAddOrGetResult)
-                .isNotNull()
-                .isEqualTo(rolePagesPrivileges);
+        assertEquals(actualAddOrGetResult, rolePagesPrivileges);
     }
 
 
@@ -67,16 +75,6 @@ class RolePagesPrivilegesServiceTest {
     @Test
     void testAddOrGet2() {
         // Arrange
-        PagesPrivileges pagesPrivileges = new PagesPrivileges();
-        pagesPrivileges.setId(1L);
-        pagesPrivileges.setPage(new Page(PAGE.USER));
-        pagesPrivileges.setPrivilege(new Privilege(PRIVILEGE.READ));
-
-        Role role = new Role();
-        role.setId(1L);
-        role.setCreatedAt(LocalDateTime.now());
-        role.setName("ADMIN");
-
         RolePagesPrivileges rolePagesPrivileges = new RolePagesPrivileges();
         rolePagesPrivileges.setPagesPrivileges(pagesPrivileges);
         rolePagesPrivileges.setRole(role);
@@ -89,9 +87,7 @@ class RolePagesPrivilegesServiceTest {
         // Assert
         verify(rolePagesPrivilegesRepository, times(1)).existById(role.getId(), pagesPrivileges.getId());
         verify(rolePagesPrivilegesRepository, times(1)).save(rolePagesPrivileges);
-        assertThat(actualAddOrGetResult)
-                .isNotNull()
-                .isEqualTo(rolePagesPrivileges);
+        assertThat(actualAddOrGetResult).isEqualTo(rolePagesPrivileges);
     }
 
     /**
@@ -100,11 +96,6 @@ class RolePagesPrivilegesServiceTest {
     @Test
     void testAddSpecialPrivileges() {
         // Arrange
-        PagesPrivileges pagesPrivileges = new PagesPrivileges();
-        pagesPrivileges.setId(1L);
-        pagesPrivileges.setPage(new Page(PAGE.USER));
-        pagesPrivileges.setPrivilege(new Privilege(PRIVILEGE.READ));
-
         User user = new User();
         user.setFirstName("firstname");
         user.setLastName("lastname");
@@ -112,22 +103,16 @@ class RolePagesPrivilegesServiceTest {
         user.setEmail("test@test.com");
         user.setEnabled(true);
         user.setSpecialPrivileges(false);
-
-
-        RolePagesPrivileges rolePagesPrivileges = new RolePagesPrivileges();
-        rolePagesPrivileges.setPagesPrivileges(pagesPrivileges);
         rolePagesPrivileges.setUser(user);
-        when(rolePagesPrivilegesRepository.save(rolePagesPrivileges)).thenReturn(rolePagesPrivileges);
 
+        when(rolePagesPrivilegesRepository.save(rolePagesPrivileges)).thenReturn(rolePagesPrivileges);
 
         // Act
         RolePagesPrivileges actualAddSpecialPrivilegesResult = rolePagesPrivilegesService.addSpecialPrivileges(rolePagesPrivileges);
 
         // Assert
         verify(rolePagesPrivilegesRepository, times(1)).save(rolePagesPrivileges);
-        assertThat(actualAddSpecialPrivilegesResult)
-                .isNotNull()
-                .isEqualTo(rolePagesPrivileges);
+        assertThat(actualAddSpecialPrivilegesResult).isEqualTo(rolePagesPrivileges);
     }
 
     /**
@@ -136,20 +121,6 @@ class RolePagesPrivilegesServiceTest {
     @Test
     void testDelete() {
         // Arrange
-        PagesPrivileges pagesPrivileges = new PagesPrivileges();
-        pagesPrivileges.setId(1L);
-        pagesPrivileges.setPage(new Page(PAGE.USER));
-        pagesPrivileges.setPrivilege(new Privilege(PRIVILEGE.READ));
-
-        Role role = new Role();
-        role.setId(1L);
-        role.setCreatedAt(LocalDateTime.now());
-        role.setName("ADMIN");
-
-        RolePagesPrivileges rolePagesPrivileges = new RolePagesPrivileges();
-        rolePagesPrivileges.setPagesPrivileges(pagesPrivileges);
-        rolePagesPrivileges.setRole(role);
-
         when(rolePagesPrivilegesRepository.existById(role.getId(), pagesPrivileges.getId())).thenReturn(true);
         when(rolePagesPrivilegesRepository.findById(role.getId(), pagesPrivileges.getId())).thenReturn(rolePagesPrivileges);
 
@@ -160,6 +131,23 @@ class RolePagesPrivilegesServiceTest {
         verify(rolePagesPrivilegesRepository, times(1)).existById(role.getId(), pagesPrivileges.getId());
         verify(rolePagesPrivilegesRepository, times(1)).findById(role.getId(), pagesPrivileges.getId());
         verify(rolePagesPrivilegesRepository, times(1)).delete(rolePagesPrivileges);
+    }
+
+
+    /**
+     * Method under test: {@link RolePagesPrivilegesService#deleteByRoleId(RolePagesPrivileges)}
+     */
+    @Test
+    void testDelete2() {
+        // Arrange
+        when(rolePagesPrivilegesRepository.existById(role.getId(), pagesPrivileges.getId())).thenReturn(false);
+
+        // Act
+        this.rolePagesPrivilegesService.deleteByRoleId(rolePagesPrivileges);
+
+        // Assert
+        verify(rolePagesPrivilegesRepository, times(1)).existById(role.getId(), pagesPrivileges.getId());
+        verifyNoMoreInteractions(rolePagesPrivilegesRepository);
     }
 
     /**
