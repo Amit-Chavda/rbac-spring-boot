@@ -16,7 +16,7 @@ public class RolePagesPrivilegesService {
         this.rolePagesPrivilegesRepository = rolePagesPrivilegesRepository;
     }
 
-    public RolePagesPrivileges add(RolePagesPrivileges rolePagesPrivileges) {
+    public RolePagesPrivileges addOrGet(RolePagesPrivileges rolePagesPrivileges) {
         long roleId = rolePagesPrivileges.getRole().getId();
         long pagesPrivilegesId = rolePagesPrivileges.getPagesPrivileges().getId();
         if (rolePagesPrivilegesRepository.existById(roleId, pagesPrivilegesId)) {
@@ -29,8 +29,13 @@ public class RolePagesPrivilegesService {
         return rolePagesPrivilegesRepository.save(rolePagesPrivileges);
     }
 
-    public void delete(RolePagesPrivileges rolePagesPrivileges) {
-        rolePagesPrivilegesRepository.delete(rolePagesPrivileges);
+    public void deleteByRoleId(RolePagesPrivileges rolePagesPrivileges) {
+        long roleId = rolePagesPrivileges.getRole().getId();
+        long pagesPrivilegesId = rolePagesPrivileges.getPagesPrivileges().getId();
+        if (rolePagesPrivilegesRepository.existById(roleId, pagesPrivilegesId)) {
+            RolePagesPrivileges rolePagesPrivileges1 = rolePagesPrivilegesRepository.findById(roleId, pagesPrivilegesId);
+            rolePagesPrivilegesRepository.delete(rolePagesPrivileges1);
+        }
     }
 
     public void deleteById(long id) {

@@ -6,13 +6,10 @@ import com.springsecurity.rbac.springsecurityrbac.entity.security.PagesPrivilege
 import com.springsecurity.rbac.springsecurityrbac.entity.security.Role;
 import com.springsecurity.rbac.springsecurityrbac.entity.security.RolePagesPrivileges;
 import com.springsecurity.rbac.springsecurityrbac.exception.RoleNotFoundException;
-import com.springsecurity.rbac.springsecurityrbac.mapper.PageMapper;
-import com.springsecurity.rbac.springsecurityrbac.mapper.PrivilegeMapper;
 import com.springsecurity.rbac.springsecurityrbac.mapper.UserMapper;
 import com.springsecurity.rbac.springsecurityrbac.repository.PagesPrivilegesRepository;
 import com.springsecurity.rbac.springsecurityrbac.repository.RoleRepository;
 import com.springsecurity.rbac.springsecurityrbac.repository.UserRepository;
-import com.springsecurity.rbac.springsecurityrbac.util.Console;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -66,12 +63,12 @@ public class UserRoleService {
         return UserMapper.toUserDto(userRepository.save(user));
     }
 
-    public UserDto revokeRole(RevokeRole revokeRole) {
-        List<Role> revokingRoles = revokeRole.getRoleNames().stream().map(roleRepository::findByName).toList();
-
+    public UserDto revokeRole(RevokeRole revokeRole) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(revokeRole.getUsername()).orElseThrow(
                 () -> new UsernameNotFoundException("User with email " + revokeRole.getUsername() + " does not exists!")
         );
+        List<Role> revokingRoles = revokeRole.getRoleNames().stream().map(roleRepository::findByName).toList();
+
         Collection<Role> roleCollection = new ArrayList<>(user.getRoles());
 
         //add new role only if user doesn't have that role already
@@ -98,15 +95,10 @@ public class UserRoleService {
         Collection<RolePagesPrivileges> rolePagesPrivilegesList = new ArrayList<>();
         pagesPrivilegesDtos.forEach(pagesPrivilegesDto -> {
 
-            PagesPrivileges pagesPrivileges1 = new PagesPrivileges(
-                    PageMapper.toPage(pagesPrivilegesDto.getPageDto()),
-                    PrivilegeMapper.toPrivilege(pagesPrivilegesDto.getPrivilegeDto())
-            );
+            String privilegeName = pagesPrivilegesDto.getPrivilegeDto().getName();
+            String pageName = pagesPrivilegesDto.getPageDto().getName();
 
             RolePagesPrivileges rolePagesPrivileges = new RolePagesPrivileges();
-
-            String privilegeName = pagesPrivileges1.getPage().getName();
-            String pageName = pagesPrivileges1.getPrivilege().getName();
 
             PagesPrivileges pagesPrivileges = pagesPrivilegesRepository.findByName(privilegeName, pageName);
 
@@ -153,7 +145,7 @@ public class UserRoleService {
                 });
 
         user.setRolePagesPrivileges(newRolePagesPrivileges);
-        user.setSpecialPrivileges(true);
+        user.setSpecialPrivileges(!newRolePagesPrivileges.isEmpty());
         userRepository.save(user);
 
         //delete unused mappings

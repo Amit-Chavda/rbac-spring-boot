@@ -2,6 +2,7 @@ package com.springsecurity.rbac.springsecurityrbac.entity.security;
 
 import com.springsecurity.rbac.springsecurityrbac.entity.User;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
 
