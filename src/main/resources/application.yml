@@ -6,6 +6,8 @@
 server:
   port: 9095
 spring:
+  profiles:
+    active: test
   datasource:
     username: root
     password: root
