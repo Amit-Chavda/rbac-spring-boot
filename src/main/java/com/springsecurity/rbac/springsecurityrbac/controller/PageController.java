@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.NoSuchElementException;
 
 @RestController
+@RequestMapping("/page")
 public class PageController {
     private PageService pageService;
 
@@ -31,7 +32,7 @@ public class PageController {
         try {
             return pageService.findByName(name);
         } catch (NoSuchElementException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
 
@@ -44,7 +45,11 @@ public class PageController {
     @DeleteMapping("/remove")
     @PreAuthorize(value = "@roleChecker.check(authentication)")
     public PageDto removePage(@RequestBody PageDto pageDto) {
-        return pageService.remove(pageDto);
+        try {
+            return pageService.remove(pageDto);
+        } catch (NoSuchElementException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 
 }
