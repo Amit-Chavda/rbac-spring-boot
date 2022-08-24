@@ -17,6 +17,7 @@ import java.util.Collection;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "users")
 public class User {
 
     @Id
