@@ -4,18 +4,15 @@ import com.springsecurity.rbac.springsecurityrbac.entity.contsants.PAGE;
 import com.springsecurity.rbac.springsecurityrbac.entity.contsants.PRIVILEGE;
 import com.springsecurity.rbac.springsecurityrbac.entity.security.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-
+import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.Mockito.when;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@ExtendWith(MockitoExtension.class)
 public class RolePagesPrivilegesRepositoryTest {
 
     @Mock
@@ -124,7 +121,7 @@ public class RolePagesPrivilegesRepositoryTest {
 
         long roleId = 1L;
         long pagesPrivilegesId = 1L;
-        when(repository.findById(roleId, pagesPrivilegesId)).thenReturn(expectedRolePagesPrivileges);
+//        when(repository.findById(roleId, pagesPrivilegesId)).thenReturn(expectedRolePagesPrivileges);
 
         //Act
         RolePagesPrivileges actualRolePagesPrivileges = repository.findById(roleId, 2L);
