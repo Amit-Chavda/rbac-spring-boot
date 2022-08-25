@@ -14,10 +14,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Transactional
@@ -39,15 +36,6 @@ public class RoleService {
         this.rolePagesPrivilegesService = rolePagesPrivilegesService;
         this.pageRepository = pageRepository;
         this.privilegeRepository = privilegeRepository;
-    }
-
-    public Role findByName(String name) throws RoleNotFoundException {
-        Optional<Role> optionalRole = Optional.ofNullable(roleRepository.findByName(name));
-        if (optionalRole.isEmpty()) {
-            throw new RoleNotFoundException(RoleAlreadyExistException.class.getName(),
-                    "Role " + name + " does not exist!", LocalDateTime.now());
-        }
-        return optionalRole.get();
     }
 
     public RoleDto createRole(RoleDto roleDto) throws RoleAlreadyExistException, NoSuchElementException {
@@ -94,17 +82,54 @@ public class RoleService {
         return RoleMapper.toRoleDtos(roleRepository.findAll());
     }
 
-    public RoleDto updateRole(RoleDto roleDto) {
-        Role role = findByName(roleDto.getName());
-        role.getRolePagesPrivileges().forEach(rolePagesPrivilegesService::deleteByRoleId);
+    public RoleDto updateRole(RoleDto roleDto) throws RoleNotFoundException,NoSuchElementException {
+
+        if (!roleRepository.existsByName(roleDto.getName())) {
+            throw new RoleNotFoundException("Role with name " + roleDto.getName() + " not found");
+        }
+
+        Role role = roleRepository.findByName(roleDto.getName());
+
+        Collection<RolePagesPrivileges> rolePagesPrivilegesList =
+                RoleMapper.toRole(roleDto).getRolePagesPrivileges().stream()
+                        .map(rolePagesPrivileges -> {
+                            //get page from database
+                            String pageName = rolePagesPrivileges.getPagesPrivileges().getPage().getName();
+                            Page page = pageRepository.findByName(pageName).orElseThrow(
+                                    () -> new NoSuchElementException("Page with name " + pageName + " not found!")
+                            );
+
+                            //get privilege from database
+                            String privilegeName = rolePagesPrivileges.getPagesPrivileges().getPrivilege().getName();
+                            Privilege privilege = privilegeRepository.findByName(privilegeName).orElseThrow(
+                                    () -> new NoSuchElementException("Privilege with name " + privilegeName + " not found!")
+                            );
+
+                            //create or get pages privileges mapping
+                            PagesPrivileges pagesPrivileges = pagesPrivilegesService.addOrGet(new PagesPrivileges(page, privilege));
+
+                            //set role
+                            rolePagesPrivileges.setPagesPrivileges(pagesPrivileges);
+                            rolePagesPrivileges.setRole(role);
+                            return rolePagesPrivilegesService.addOrGet(rolePagesPrivileges);
+                        }).toList();
+
+        role.setRolePagesPrivileges(rolePagesPrivilegesList);
+        return RoleMapper.toRoleDto(roleRepository.save(role));
+    }
+
+    public RoleDto findByName(String name) {
+        if (!roleRepository.existsByName(name)) {
+            throw new RoleNotFoundException("Role with name " + name + " not found");
+        }
+        return RoleMapper.toRoleDto(roleRepository.findByName(name));
+    }
+
+    public void delete(RoleDto roleDto) throws RoleNotFoundException {
+        if (!roleRepository.existsByName(roleDto.getName())) {
+            throw new RoleNotFoundException("Role with name " + roleDto.getName() + " not found");
+        }
+        Role role = roleRepository.findByName(roleDto.getName());
         roleRepository.delete(role);
-        return createRole(roleDto);
     }
-
-    public void delete(Role role) throws RoleNotFoundException {
-        Role role1 = findByName(role.getName());
-        roleRepository.delete(role1);
-    }
-
-
 }
