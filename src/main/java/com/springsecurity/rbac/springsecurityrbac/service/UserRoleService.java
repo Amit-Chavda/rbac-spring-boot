@@ -6,13 +6,10 @@ import com.springsecurity.rbac.springsecurityrbac.entity.security.PagesPrivilege
 import com.springsecurity.rbac.springsecurityrbac.entity.security.Role;
 import com.springsecurity.rbac.springsecurityrbac.entity.security.RolePagesPrivileges;
 import com.springsecurity.rbac.springsecurityrbac.exception.RoleNotFoundException;
-import com.springsecurity.rbac.springsecurityrbac.mapper.PageMapper;
-import com.springsecurity.rbac.springsecurityrbac.mapper.PrivilegeMapper;
 import com.springsecurity.rbac.springsecurityrbac.mapper.UserMapper;
 import com.springsecurity.rbac.springsecurityrbac.repository.PagesPrivilegesRepository;
 import com.springsecurity.rbac.springsecurityrbac.repository.RoleRepository;
 import com.springsecurity.rbac.springsecurityrbac.repository.UserRepository;
-import com.springsecurity.rbac.springsecurityrbac.util.Console;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -43,11 +40,19 @@ public class UserRoleService {
 
     public UserDto assignRole(AssignRole assignRole) throws UsernameNotFoundException, RoleNotFoundException {
 
-        List<Role> roles = assignRole.getRoleNames().stream().map(roleRepository::findByName).toList();
-
         User user = userRepository.findByEmail(assignRole.getUsername()).orElseThrow(
-                () -> new UsernameNotFoundException("User with email " + assignRole.getUsername() + " does not exists!")
+                () -> new UsernameNotFoundException("User with email " + assignRole.getUsername() + " not found")
         );
+
+        List<Role> roles = assignRole.getRoleNames().stream()
+                .map(roleName -> {
+                    if (roleRepository.existsByName(roleName)) {
+                        return roleRepository.findByName(roleName);
+                    }
+                    throw new RoleNotFoundException("Role with name " + roleName + " not found");
+                }).toList();
+
+
         Collection<Role> roleCollection = new ArrayList<>();
 
         //check if user has other roles
@@ -66,12 +71,12 @@ public class UserRoleService {
         return UserMapper.toUserDto(userRepository.save(user));
     }
 
-    public UserDto revokeRole(RevokeRole revokeRole) {
+    public UserDto revokeRole(RevokeRole revokeRole) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(revokeRole.getUsername()).orElseThrow(
+                () -> new UsernameNotFoundException("User with email " + revokeRole.getUsername() + " not found")
+        );
         List<Role> revokingRoles = revokeRole.getRoleNames().stream().map(roleRepository::findByName).toList();
 
-        User user = userRepository.findByEmail(revokeRole.getUsername()).orElseThrow(
-                () -> new UsernameNotFoundException("User with email " + revokeRole.getUsername() + " does not exists!")
-        );
         Collection<Role> roleCollection = new ArrayList<>(user.getRoles());
 
         //add new role only if user doesn't have that role already
@@ -79,15 +84,13 @@ public class UserRoleService {
 
         user.setRoles(roleCollection);
         logger.info("Role(s) {} revoked from user {}", revokeRole.getRoleNames(), revokeRole.getUsername());
-        User user1=userRepository.save(user);
-        Console.println(user1.isSpecialPrivileges()+"............",UserRoleService.class);
-        return UserMapper.toUserDto(user1);
+        return UserMapper.toUserDto(userRepository.save(user));
     }
 
-    public ExtendRole extendRole(ExtendRole extendRole) throws UsernameNotFoundException {
+    public UserDto extendRole(ExtendRole extendRole) throws UsernameNotFoundException {
 
         User user = userRepository.findByEmail(extendRole.getUsername()).orElseThrow(
-                () -> new UsernameNotFoundException("User with email " + extendRole.getUsername() + " does not exists!")
+                () -> new UsernameNotFoundException("User with email " + extendRole.getUsername() + " not found")
         );
         if (user.getRoles() == null) {
             throw new UsernameNotFoundException("User does not have role(s) related to this privileges!");
@@ -99,32 +102,26 @@ public class UserRoleService {
         Collection<RolePagesPrivileges> rolePagesPrivilegesList = new ArrayList<>();
         pagesPrivilegesDtos.forEach(pagesPrivilegesDto -> {
 
-            PagesPrivileges pagesPrivileges1 = new PagesPrivileges(
-                    PageMapper.toPage(pagesPrivilegesDto.getPageDto()),
-                    PrivilegeMapper.toPrivilege(pagesPrivilegesDto.getPrivilegeDto())
-            );
+            String privilegeName = pagesPrivilegesDto.getPrivilegeDto().getName();
+            String pageName = pagesPrivilegesDto.getPageDto().getName();
 
             RolePagesPrivileges rolePagesPrivileges = new RolePagesPrivileges();
-
-            String privilegeName = pagesPrivileges1.getPage().getName();
-            String pageName = pagesPrivileges1.getPrivilege().getName();
 
             PagesPrivileges pagesPrivileges = pagesPrivilegesRepository.findByName(privilegeName, pageName);
 
             rolePagesPrivileges.setPagesPrivileges(pagesPrivileges);
-            rolePagesPrivilegesList.add(rolePagesPrivilegesService.add(rolePagesPrivileges));
+            rolePagesPrivilegesList.add(rolePagesPrivilegesService.addSpecialPrivileges(rolePagesPrivileges));
             rolePagesPrivileges.setUser(user);
         });
 
         user.setRolePagesPrivileges(rolePagesPrivilegesList);
         user.setSpecialPrivileges(true);
-        userRepository.save(user);
-        return extendRole;
+        return UserMapper.toUserDto(userRepository.save(user));
     }
 
-    public RevokeExtendPrivilege revokeExtendedPrivileges(RevokeExtendPrivilege revokeExtendPrivilege) throws UsernameNotFoundException {
+    public UserDto revokeExtendedPrivileges(RevokeExtendPrivilege revokeExtendPrivilege) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(revokeExtendPrivilege.getUsername()).orElseThrow(
-                () -> new UsernameNotFoundException("User with email " + revokeExtendPrivilege.getUsername() + " does not exists!")
+                () -> new UsernameNotFoundException("User with email " + revokeExtendPrivilege.getUsername() + " not found")
         );
 
         Collection<RolePagesPrivileges> newRolePagesPrivileges = new ArrayList<>();
@@ -154,11 +151,11 @@ public class UserRoleService {
                 });
 
         user.setRolePagesPrivileges(newRolePagesPrivileges);
-        user.setSpecialPrivileges(true);
-        userRepository.save(user);
+        user.setSpecialPrivileges(!newRolePagesPrivileges.isEmpty());
+        User user1 = userRepository.save(user);
 
         //delete unused mappings
         removableRolePagesPrivileges.forEach(rolePagesPrivileges -> rolePagesPrivilegesService.deleteById(rolePagesPrivileges.getId()));
-        return revokeExtendPrivilege;
+        return UserMapper.toUserDto(user1);
     }
 }

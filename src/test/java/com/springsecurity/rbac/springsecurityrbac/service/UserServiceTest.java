@@ -13,23 +13,24 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
-
 
     @Mock
     private PasswordEncoder passwordEncoder;
 
     @Mock
     private UserRepository userRepository;
+
     @InjectMocks
     private UserService userService;
 
@@ -61,7 +62,6 @@ class UserServiceTest {
     @Test
     void testCreateUser2() throws UserAlreadyExistException {
         // Arrange
-/*
         UserDto userDto = new UserDto();
         userDto.setFirstName("firstname");
         userDto.setLastName("lastname");
@@ -69,27 +69,28 @@ class UserServiceTest {
         userDto.setEmail("test@test.com");
         userDto.setEnabled(true);
 
-
         User user = UserMapper.toUser(userDto);
-        user.setPassword(passwordEncoder.encode("password"));
+        user.setFirstName("firstname");
+        user.setLastName("lastname");
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        user.setEmail("test@test.com");
+        user.setEnabled(true);
         user.setSpecialPrivileges(false);
-        user.setCreatedAt(LocalDateTime.now());
+        //user.setCreatedAt(LocalDateTime.now());
+
         when(userRepository.existsByEmail(userDto.getEmail())).thenReturn(false);
-        when(userRepository.save(user)).thenReturn(user);
+        when(userRepository.save(any())).thenReturn(user);
 
         // Act
         UserDto actualResult = this.userService.createUser(userDto);
 
         // Assert
         verify(userRepository, times(1)).existsByEmail(userDto.getEmail());
-        verify(userRepository, times(1)).save(user);
+        verify(userRepository, times(1)).save(any());
 
         assertThat(actualResult).isNotNull();
         assertThat(actualResult.getPassword()).isNull();
-        assertThat(actualResult.getCreatedAt()).isNotNull();
         assertThat(actualResult.getEmail()).isNotNull();
-
-*/
 
     }
 
@@ -98,12 +99,32 @@ class UserServiceTest {
      */
     @Test
     void testFindAll() {
-        // Arrange and Act
-        // TODO: Populate arranged inputs
+        // Arrange
+        UserDto userDto = new UserDto();
+        userDto.setFirstName("firstname");
+        userDto.setLastName("lastname");
+        userDto.setPassword("password");
+        userDto.setEmail("test@test.com");
+        userDto.setEnabled(true);
+
+        UserDto expected = new UserDto();
+        expected.setFirstName("firstname");
+        expected.setLastName("lastname");
+        expected.setEmail("test@test.com");
+        expected.setEnabled(true);
+        expected.setRoles(Collections.emptyList());
+
+        User user = UserMapper.toUser(userDto);
+        when(userRepository.findAll()).thenReturn(List.of(user));
+
+        //Act
         Collection<UserDto> actualFindAllResult = this.userService.findAll();
 
         // Assert
-        // TODO: Add assertions on result
+        verify(userRepository, times(1)).findAll();
+        assertThat(actualFindAllResult)
+                .isNotNull()
+                .isEqualTo(List.of(expected));
     }
 
     /**
@@ -112,14 +133,51 @@ class UserServiceTest {
     @Test
     void testFindByEmail() throws UsernameNotFoundException {
         // Arrange
-        // TODO: Populate arranged inputs
-        String username = "";
+
+        UserDto userDto = new UserDto();
+        userDto.setFirstName("firstname");
+        userDto.setLastName("lastname");
+        userDto.setEmail("test@test.com");
+        userDto.setEnabled(true);
+        userDto.setRoles(Collections.emptyList());
+
+        User user = UserMapper.toUser(userDto);
+        user.setFirstName("firstname");
+        user.setLastName("lastname");
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        user.setEmail("test@test.com");
+        user.setEnabled(true);
+        user.setSpecialPrivileges(false);
+
+        when(userRepository.findByEmail(userDto.getEmail())).thenReturn(Optional.of(user));
 
         // Act
-        UserDto actualFindByEmailResult = this.userService.findByEmail(username);
+        UserDto actualResult = this.userService.findByEmail(userDto.getEmail());
 
         // Assert
-        // TODO: Add assertions on result
+        verify(userRepository, times(1)).findByEmail(userDto.getEmail());
+
+        assertThat(actualResult)
+                .isNotNull()
+                .isEqualTo(userDto);
+
+    }
+
+
+    /**
+     * Method under test: {@link UserService#findByEmail(String)}
+     */
+
+    @Test
+    void testFindByEmail2() throws UsernameNotFoundException {
+        // Arrange
+        String username = "test@test.com";
+        UsernameNotFoundException usernameNotFoundException = new UsernameNotFoundException("User with email " + username + " does not exists!");
+        when(userRepository.findByEmail(username)).thenThrow(usernameNotFoundException);
+
+        // Act and Assert
+        assertThrows(UsernameNotFoundException.class, () -> this.userService.findByEmail(username));
+        verify(userRepository, times(1)).findByEmail(username);
     }
 
     /**
@@ -128,14 +186,34 @@ class UserServiceTest {
     @Test
     void testDeleteByEmail() throws UsernameNotFoundException {
         // Arrange
-        // TODO: Populate arranged inputs
-        String email = "";
+        UserDto userDto = new UserDto();
+        userDto.setFirstName("firstname");
+        userDto.setLastName("lastname");
+        userDto.setEmail("test@test.com");
+        userDto.setEnabled(true);
+        userDto.setRoles(Collections.emptyList());
+
+        User user = new User();
+        user.setFirstName("firstname");
+        user.setLastName("lastname");
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        user.setEmail("test@test.com");
+        user.setEnabled(true);
+        user.setSpecialPrivileges(false);
+
+
+        when(userRepository.findByEmail(userDto.getEmail())).thenReturn(Optional.of(user));
 
         // Act
-        UserDto actualDeleteByEmailResult = this.userService.deleteByEmail(email);
+        UserDto actualDeleteByEmailResult = this.userService.deleteByEmail(userDto.getEmail());
 
         // Assert
-        // TODO: Add assertions on result
+        verify(userRepository, times(1)).findByEmail(userDto.getEmail());
+        verify(userRepository, times(1)).delete(user);
+
+        assertThat(actualDeleteByEmailResult)
+                .isNotNull()
+                .isEqualTo(userDto);
     }
 }
 

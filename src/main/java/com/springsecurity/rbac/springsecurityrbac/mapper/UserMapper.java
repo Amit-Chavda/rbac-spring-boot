@@ -15,7 +15,6 @@ public class UserMapper {
         userDto.setFirstName(user.getFirstName());
         userDto.setLastName(user.getLastName());
         userDto.setRoles(RoleMapper.toRoleDtos(user.getRoles()));
-        userDto.setCreatedAt(user.getCreatedAt());
 
         if (user.isSpecialPrivileges()) {
             Collection<PagesPrivilegesDto> pagesPrivilegesDtos =
@@ -40,7 +39,6 @@ public class UserMapper {
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
         user.setPassword(userDto.getPassword());
-        user.setCreatedAt(userDto.getCreatedAt());
         return user;
     }
 

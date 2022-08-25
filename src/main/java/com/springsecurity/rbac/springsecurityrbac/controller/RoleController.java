@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collection;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/role")
@@ -34,9 +35,9 @@ public class RoleController {
     @PreAuthorize(value = "@roleChecker.check(authentication)")
     public RoleDto findRoleByName(@RequestParam String name) {
         try {
-            return RoleMapper.toRoleDto(roleService.findByName(name));
+            return roleService.findByName(name);
         } catch (RoleNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
 
@@ -53,6 +54,10 @@ public class RoleController {
     @PutMapping("/update")
     @PreAuthorize(value = "@roleChecker.check(authentication)")
     public RoleDto updateRole(@RequestBody RoleDto roleDto) {
-        return roleService.updateRole(roleDto);
+        try {
+            return roleService.updateRole(roleDto);
+        } catch (RoleNotFoundException | NoSuchElementException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 }

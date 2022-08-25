@@ -31,20 +31,24 @@ public class PrivilegeController {
         try {
             return privilegeService.findByName(name);
         } catch (NoSuchElementException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
 
     @PostMapping("/create")
     @PreAuthorize(value = "@roleChecker.check(authentication)")
     public PrivilegeDto createPrivilege(@RequestBody PrivilegeDto privilegeDto) {
-        return privilegeService.addOrGet(privilegeDto);
+        return privilegeService.add(privilegeDto);
     }
 
     @DeleteMapping("/remove")
     @PreAuthorize(value = "@roleChecker.check(authentication)")
     public PrivilegeDto removePrivilege(@RequestBody PrivilegeDto privilegeDto) {
-        return privilegeService.remove(privilegeDto);
+        try {
+            return privilegeService.remove(privilegeDto);
+        } catch (NoSuchElementException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 
 }

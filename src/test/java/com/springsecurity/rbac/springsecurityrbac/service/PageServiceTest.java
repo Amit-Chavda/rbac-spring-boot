@@ -11,14 +11,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 
@@ -39,19 +35,16 @@ class PageServiceTest {
         String name = PAGE.USER;
         PageDto expectedFindByNameResult = new PageDto(name);
         Page page = PageMapper.toPage(expectedFindByNameResult);
-
         when(pageRepository.findByName(name)).thenReturn(Optional.of(page));
+
         // Act
         PageDto actualFindByNameResult = this.pageService.findByName(name);
 
         // Assert
-        assertThat(actualFindByNameResult)
-                .isNotNull()
-                .isEqualTo(expectedFindByNameResult);
+        verify(pageRepository, times(1)).findByName(name);
 
-        assertThat(actualFindByNameResult.getName())
-                .isNotNull()
-                .isEqualTo(expectedFindByNameResult.getName());
+        assertEquals(actualFindByNameResult, expectedFindByNameResult);
+        assertEquals(actualFindByNameResult.getName(), expectedFindByNameResult.getName());
     }
 
     /**
@@ -61,12 +54,11 @@ class PageServiceTest {
     void testFindByName2() throws NoSuchElementException {
         // Arrange
         String name = "DEMO";
-        NoSuchElementException noSuchElementException = new NoSuchElementException("Page with name " + name + " not found!");
-
-        when(pageRepository.findByName(name)).thenThrow(noSuchElementException);
+        when(pageRepository.findByName(name)).thenReturn(Optional.empty());
 
         // Act and  Assert
         assertThrows(NoSuchElementException.class, () -> this.pageService.findByName(name));
+        verify(pageRepository, times(1)).findByName(name);
     }
 
     /**
@@ -83,14 +75,9 @@ class PageServiceTest {
         PageDto actualAddResult = this.pageService.add(expectedAddResult);
 
         // Assert
-        assertThat(actualAddResult)
-                .isNotNull()
-                .isEqualTo(expectedAddResult);
-
-        assertThat(actualAddResult.getName())
-                .isNotNull()
-                .isEqualTo(expectedAddResult.getName());
-
+        verify(pageRepository, times(1)).save(page);
+        assertEquals(actualAddResult, expectedAddResult);
+        assertEquals(actualAddResult.getName(), expectedAddResult.getName());
     }
 
     /**
@@ -105,21 +92,13 @@ class PageServiceTest {
 
         when(pageRepository.findByName(name)).thenReturn(Optional.of(page));
 
-
         // Act
         PageDto actualAddOrGetResult = this.pageService.addOrGet(expectedAddResult);
 
         // Assert
         verify(pageRepository, times(1)).findByName(name);
-
-
-        assertThat(actualAddOrGetResult)
-                .isNotNull()
-                .isEqualTo(expectedAddResult);
-
-        assertThat(actualAddOrGetResult.getName())
-                .isNotNull()
-                .isEqualTo(expectedAddResult.getName());
+        assertEquals(actualAddOrGetResult, expectedAddResult);
+        assertEquals(actualAddOrGetResult.getName(), expectedAddResult.getName());
     }
 
     /**
@@ -131,25 +110,15 @@ class PageServiceTest {
         String name = PAGE.PRODUCT;
         PageDto expectedAddResult = new PageDto(PAGE.PRODUCT);
         Page page = PageMapper.toPage(expectedAddResult);
-
-        //when(pageRepository.findByName(name)).thenReturn(Optional.of(null));
         when(pageRepository.save(page)).thenReturn(page);
-
 
         // Act
         PageDto actualAddOrGetResult = this.pageService.addOrGet(expectedAddResult);
 
         // Assert
-        verify(pageRepository,times(1)).save(page);
-
-
-        assertThat(actualAddOrGetResult)
-                .isNotNull()
-                .isEqualTo(expectedAddResult);
-
-        assertThat(actualAddOrGetResult.getName())
-                .isNotNull()
-                .isEqualTo(expectedAddResult.getName());
+        verify(pageRepository, times(1)).save(page);
+        assertEquals(actualAddOrGetResult, expectedAddResult);
+        assertEquals(actualAddOrGetResult.getName(), expectedAddResult.getName());
     }
 
     /**
@@ -158,21 +127,18 @@ class PageServiceTest {
     @Test
     void testFindAll() {
         // Arrange
-        Page page1 = new Page(PAGE.PRODUCT);
-        Page page2 = new Page(PAGE.USER);
-        Collection<PageDto> expectedFindAllResult = PageMapper.toPageDtos(Arrays.asList(page1, page2));
-
-        when(pageRepository.findAll()).thenReturn(Arrays.asList(page1, page2));
+        List<Page> pageList = new ArrayList<>();
+        pageList.add(new Page(PAGE.PRODUCT));
+        pageList.add(new Page(PAGE.USER));
+        Collection<PageDto> expectedFindAllResult = PageMapper.toPageDtos(pageList);
+        when(pageRepository.findAll()).thenReturn(pageList);
 
         // Act
         Collection<PageDto> actualFindAllResult = this.pageService.findAll();
 
         // Assert
-        assertThat(actualFindAllResult)
-                .isNotNull()
-                .isNotEmpty()
-                .isEqualTo(expectedFindAllResult);
-
+        verify(pageRepository, times(1)).findAll();
+        assertEquals(actualFindAllResult, expectedFindAllResult);
     }
 
     /**
@@ -182,18 +148,17 @@ class PageServiceTest {
     void testRemove() {
         // Arrange
         String name = PAGE.PRODUCT;
-        PageDto pageDto = new PageDto(PAGE.PRODUCT);
-        Page page = PageMapper.toPage(pageDto);
-
+        PageDto pageDto = new PageDto(name);
+        Page page = new Page(name);
         when(pageRepository.findByName(name)).thenReturn(Optional.of(page));
 
         // Act
         PageDto actualRemoveResult = this.pageService.remove(pageDto);
 
         // Assert
-        assertThat(actualRemoveResult)
-                .isNotNull()
-                .isEqualTo(pageDto);
+        verify(pageRepository, times(1)).findByName(name);
+        verify(pageRepository, times(1)).delete(page);
+        assertEquals(actualRemoveResult, pageDto);
     }
 
     @Test
@@ -201,12 +166,12 @@ class PageServiceTest {
         // Arrange
         String name = "HOME";
         PageDto pageDto = new PageDto(name);
-        NoSuchElementException noSuchElementException = new NoSuchElementException("Page with name " + name + " not found!");
-
-        doThrow(noSuchElementException).when(pageRepository).findByName(anyString());
+        when(pageRepository.findByName(name)).thenReturn(Optional.empty());
 
         // Act and Assert
         assertThrows(NoSuchElementException.class, () -> this.pageService.remove(pageDto));
+        verify(pageRepository, times(1)).findByName(name);
+        verifyNoMoreInteractions(pageRepository);
     }
 }
 

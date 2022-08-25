@@ -66,9 +66,8 @@ public class GlobalResponseEntityExceptionHandler extends ResponseEntityExceptio
                 ex.getMessage(),
                 request.getDescription(false),
                 LocalDateTime.now()
-
         );
-        return new ResponseEntity<>(badCredentialsException, HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(badCredentialsException, HttpStatus.BAD_REQUEST);
     }
 
 }

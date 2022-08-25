@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @ToString
-public class UserAlreadyExistException extends RuntimeException{
+public class UserAlreadyExistException extends RuntimeException {
     private String name;
     private String message;
     private LocalDateTime timestamp;
@@ -18,5 +18,11 @@ public class UserAlreadyExistException extends RuntimeException{
         this.name = name;
         this.message = message;
         this.timestamp = timestamp;
+    }
+
+    public UserAlreadyExistException(String message) {
+        this.name = this.getClass().getName();
+        this.message = message;
+        this.timestamp = LocalDateTime.now();
     }
 }

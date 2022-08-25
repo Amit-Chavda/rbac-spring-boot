@@ -20,4 +20,10 @@ public class RoleAlreadyExistException extends RuntimeException {
         this.message = message;
         this.timestamp = timestamp;
     }
+
+    public RoleAlreadyExistException(String message) {
+        this.name = this.getClass().getName();
+        this.message = message;
+        this.timestamp = LocalDateTime.now();
+    }
 }

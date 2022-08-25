@@ -26,28 +26,28 @@ public class UserRoleController {
         try {
             return userRoleService.assignRole(assignRole);
         } catch (RoleNotFoundException | UsernameNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
 
     @PostMapping("/extendRole")
     @PreAuthorize(value = "@roleChecker.check(authentication)")
-    public ExtendRole extendRole(@RequestBody ExtendRole extendRole) {
+    public UserDto extendRole(@RequestBody ExtendRole extendRole) {
 
         try {
             return userRoleService.extendRole(extendRole);
         } catch (UsernameNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
 
     @PutMapping("/revokeExtendedPrivileges")
     @PreAuthorize(value = "@roleChecker.check(authentication)")
-    public RevokeExtendPrivilege revokeExtendedPrivileges(@RequestBody RevokeExtendPrivilege revokeExtendPrivilege) {
+    public UserDto revokeExtendedPrivileges(@RequestBody RevokeExtendPrivilege revokeExtendPrivilege) {
         try {
             return userRoleService.revokeExtendedPrivileges(revokeExtendPrivilege);
         } catch (UsernameNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
 
@@ -57,7 +57,7 @@ public class UserRoleController {
         try {
             return userRoleService.revokeRole(revokeRole);
         } catch (RoleNotFoundException | UsernameNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
 }

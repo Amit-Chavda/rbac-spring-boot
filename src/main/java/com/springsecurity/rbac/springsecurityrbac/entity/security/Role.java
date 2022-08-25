@@ -1,20 +1,16 @@
 package com.springsecurity.rbac.springsecurityrbac.entity.security;
 
 import com.springsecurity.rbac.springsecurityrbac.entity.User;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Collection;
 
-@Data
 @Entity
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 public class Role {
 
     @Id
