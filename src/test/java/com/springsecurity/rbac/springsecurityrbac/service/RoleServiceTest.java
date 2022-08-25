@@ -51,15 +51,22 @@ class RoleServiceTest {
 
 
     private Role role;
+    private RoleDto roleDto;
     private String roleName;
 
     @BeforeEach
     void setup() {
         roleName = "ADMIN";
+        roleDto = new RoleDto();
+        roleDto.setName(roleName);
+        roleDto.setCreatedAt(LocalDateTime.now());
+        roleDto.setPagePrivilegeMap(Collections.emptyMap());
+
         role = new Role();
         role.setId(10L);
         role.setName(roleName);
         role.setCreatedAt(LocalDateTime.now());
+        role.setRolePagesPrivileges(Collections.emptyList());
     }
 
 
@@ -69,14 +76,16 @@ class RoleServiceTest {
     @Test
     void testFindByName() throws RoleNotFoundException {
         // Arrange
+        when(roleRepository.existsByName(roleName)).thenReturn(true);
         when(roleRepository.findByName(roleName)).thenReturn(role);
 
         // Act
-        Role actualFindByNameResult = this.roleService.findByName(roleName);
+        RoleDto actualFindByNameResult = this.roleService.findByName(roleName);
 
         // Assert
+        verify(roleRepository, times(1)).existsByName(roleName);
         verify(roleRepository, times(1)).findByName(roleName);
-        assertThat(actualFindByNameResult).isEqualTo(role);
+        assertThat(actualFindByNameResult).isEqualTo(roleDto);
     }
 
 
@@ -86,15 +95,13 @@ class RoleServiceTest {
     @Test
     void testFindByName2() throws RoleNotFoundException {
         // Arrange
-        RoleNotFoundException exception = new RoleNotFoundException(RoleAlreadyExistException.class.getName(),
-                "Role " + roleName + " does not exist!", LocalDateTime.now());
-        when(roleRepository.findByName(roleName)).thenThrow(exception);
+        when(roleRepository.existsByName(roleName)).thenReturn(false);
 
         // Act
         assertThrows(RoleNotFoundException.class, () -> roleService.findByName(roleName));
 
         // Assert
-        verify(roleRepository, times(1)).findByName(roleName);
+        verify(roleRepository, times(1)).existsByName(roleName);
     }
 
     /**
@@ -114,9 +121,6 @@ class RoleServiceTest {
         Map<PageDto, Collection<PrivilegeDto>> map = new HashMap<>();
         map.put(pageDto, List.of(privilegeDto));
 
-        RoleDto roleDto = new RoleDto();
-        roleDto.setName(roleName);
-        roleDto.setCreatedAt(LocalDateTime.now());
         roleDto.setPagePrivilegeMap(map);
 
         RolePagesPrivileges rolePagesPrivileges = new RolePagesPrivileges();
@@ -176,14 +180,8 @@ class RoleServiceTest {
         privilege.setId(1L);
 
         Map<PageDto, Collection<PrivilegeDto>> map = new HashMap<>();
-        map.put(
-                pageDto,
-                List.of(privilegeDto)
-        );
+        map.put(pageDto, List.of(privilegeDto));
 
-        RoleDto roleDto = new RoleDto();
-        roleDto.setName("ADMIN");
-        roleDto.setCreatedAt(role.getCreatedAt());
         roleDto.setPagePrivilegeMap(map);
 
         RolePagesPrivileges rolePagesPrivileges = new RolePagesPrivileges();
@@ -227,17 +225,19 @@ class RoleServiceTest {
     }
 
     /**
-     * Method under test: {@link RoleService#delete(Role)}
+     * Method under test: {@link RoleService#delete(RoleDto)}
      */
     @Test
     void testDelete() {
         // Arrange
+        when(roleRepository.existsByName(roleName)).thenReturn(true);
         when(roleRepository.findByName(roleName)).thenReturn(role);
 
         // Act
-        this.roleService.delete(role);
+        this.roleService.delete(roleDto);
 
         // Assert
+        verify(roleRepository, times(1)).existsByName(roleName);
         verify(roleRepository, times(1)).delete(role);
         verify(roleRepository, times(1)).findByName(roleName);
     }
@@ -245,11 +245,11 @@ class RoleServiceTest {
     @Test
     void testDelete2() {
         // Arrange
-        when(roleRepository.findByName(roleName)).thenReturn(null);
+        when(roleRepository.existsByName(roleName)).thenReturn(false);
 
         // Act and Assert
-        assertThrows(RoleNotFoundException.class, () -> this.roleService.delete(role));
-        verify(roleRepository, times(1)).findByName(roleName);
+        assertThrows(RoleNotFoundException.class, () -> this.roleService.delete(roleDto));
+        verify(roleRepository, times(1)).existsByName(roleName);
         verifyNoMoreInteractions(roleRepository);
     }
 }

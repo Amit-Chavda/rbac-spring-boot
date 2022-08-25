@@ -20,4 +20,10 @@ public class RoleNotFoundException extends RuntimeException {
         this.message = message;
         this.timestamp = timestamp;
     }
+
+    public RoleNotFoundException(String message) {
+        this.name = this.getClass().getName();
+        this.message = message;
+        this.timestamp = LocalDateTime.now();
+    }
 }
