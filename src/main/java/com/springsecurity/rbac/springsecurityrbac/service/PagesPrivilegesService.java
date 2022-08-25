@@ -25,9 +25,7 @@ public class PagesPrivilegesService {
         return pagesPrivilegesRepository.save(pagesPrivileges);
     }
 
-    public PagesPrivileges findByName(PagesPrivileges pagesPrivileges) throws NoSuchElementException {
-        String privilegeName = pagesPrivileges.getPrivilege().getName();
-        String pageName = pagesPrivileges.getPage().getName();
+    public PagesPrivileges findByName(String privilegeName, String pageName) throws NoSuchElementException {
         if (pagesPrivilegesRepository.existsByName(privilegeName, pageName)) {
             return pagesPrivilegesRepository.findByName(privilegeName, pageName);
         }

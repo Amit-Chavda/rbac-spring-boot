@@ -84,35 +84,40 @@ class PagesPrivilegesServiceTest {
     }
 
     /**
-     * Method under test: {@link PagesPrivilegesService#findByName(PagesPrivileges)}
+     * Method under test: {@link PagesPrivilegesService#findByName(String, String)}
      */
     @Test
     void testFindByName() throws NoSuchElementException {
         // Arrange
-        when(pagesPrivilegesRepository.existsByName(privilege.getName(), page.getName())).thenReturn(true);
-        when(pagesPrivilegesRepository.findByName(privilege.getName(), page.getName())).thenReturn(pagesPrivileges);
+        String pageName = page.getName();
+        String privilegeName = privilege.getName();
+
+        when(pagesPrivilegesRepository.existsByName(privilegeName, pageName)).thenReturn(true);
+        when(pagesPrivilegesRepository.findByName(privilegeName, pageName)).thenReturn(pagesPrivileges);
 
         // Act
-        PagesPrivileges actualFindByNameResult = this.pagesPrivilegesService.findByName(pagesPrivileges);
+        PagesPrivileges actualFindByNameResult = this.pagesPrivilegesService.findByName(privilegeName, pageName);
 
         // Assert
-        verify(pagesPrivilegesRepository, times(1)).existsByName(privilege.getName(), page.getName());
-        verify(pagesPrivilegesRepository, times(1)).findByName(privilege.getName(), page.getName());
+        verify(pagesPrivilegesRepository, times(1)).existsByName(privilegeName, pageName);
+        verify(pagesPrivilegesRepository, times(1)).findByName(privilegeName, pageName);
 
         assertEquals(actualFindByNameResult, pagesPrivileges);
     }
 
     /**
-     * Method under test: {@link PagesPrivilegesService#findByName(PagesPrivileges)}
+     * Method under test: {@link PagesPrivilegesService#findByName(String, String)}
      */
     @Test
     void testFindByName2() throws NoSuchElementException {
         // Arrange
+        String pageName = page.getName();
+        String privilegeName = privilege.getName();
         when(pagesPrivilegesRepository.existsByName(privilege.getName(), page.getName())).thenReturn(false);
 
 
         // Act and Assert
-        assertThrows(NoSuchElementException.class, () -> this.pagesPrivilegesService.findByName(pagesPrivileges));
+        assertThrows(NoSuchElementException.class, () -> this.pagesPrivilegesService.findByName(privilegeName, pageName));
         verify(pagesPrivilegesRepository, times(1)).existsByName(privilege.getName(), page.getName());
     }
 }
