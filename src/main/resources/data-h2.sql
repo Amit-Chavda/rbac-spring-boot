@@ -1,4 +1,5 @@
 INSERT INTO `users` (`created_at`, `email`, `enabled`, `first_name`, `last_name`, `password`, `special_privileges`) VALUES ('2022-08-23 15:20:39', 'admin@test.com', '1', 'Admin', 'Admin', '$2a$10$jdpeoOlg6YC9ICiGFHmIeOD7.8lHya.cR5nVsS/YYk2D5MULdW74W', '0');
+INSERT INTO `users` (`created_at`, `email`, `enabled`, `first_name`, `last_name`, `password`, `special_privileges`) VALUES ('2022-08-23 15:20:39', 'user@test.com', '1', 'user', 'user', '$2a$10$jdpeoOlg6YC9ICiGFHmIeOD7.8lHya.cR5nVsS/YYk2D5MULdW74W', '0');
 
 INSERT INTO `privilege` (`name`) VALUES ('WRITE');
 INSERT INTO `privilege` (`name`) VALUES ('UPDATE');
@@ -32,7 +33,7 @@ INSERT INTO `pages_privileges` (`page_id`, `privilege_id`) VALUES ('4', '4');
 
 
 INSERT INTO `role` (`created_at`, `name`) VALUES ('2022-08-20 17:37:08', 'ADMIN');
-
+INSERT INTO `role` (`created_at`, `name`) VALUES ('2022-08-20 17:37:08', 'USER');
 
 INSERT INTO `role_pages_privileges` (`pages_privileges_id`, `role_id`) VALUES ('1', '1');
 INSERT INTO `role_pages_privileges` (`pages_privileges_id`, `role_id`) VALUES ('2', '1');
@@ -50,5 +51,8 @@ INSERT INTO `role_pages_privileges` (`pages_privileges_id`, `role_id`) VALUES ('
 INSERT INTO `role_pages_privileges` (`pages_privileges_id`, `role_id`) VALUES ('14', '1');
 INSERT INTO `role_pages_privileges` (`pages_privileges_id`, `role_id`) VALUES ('15', '1');
 INSERT INTO `role_pages_privileges` (`pages_privileges_id`, `role_id`) VALUES ('16', '1');
+
+
+INSERT INTO `role_pages_privileges` (`pages_privileges_id`, `role_id`) VALUES ('1', '2');
 
 INSERT INTO `users_roles` (`user_id`, `role_id`) VALUES ('1', '1');
