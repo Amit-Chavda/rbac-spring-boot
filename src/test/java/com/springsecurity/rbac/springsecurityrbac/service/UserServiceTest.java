@@ -89,7 +89,7 @@ class UserServiceTest {
         verify(userRepository, times(1)).save(any());
 
         assertThat(actualResult).isNotNull();
-        assertThat(actualResult.getPassword()).isNull();
+        assertThat(actualResult.getPassword()).isEmpty();
         assertThat(actualResult.getEmail()).isNotNull();
 
     }
@@ -111,7 +111,9 @@ class UserServiceTest {
         expected.setFirstName("firstname");
         expected.setLastName("lastname");
         expected.setEmail("test@test.com");
+        expected.setPassword("");
         expected.setEnabled(true);
+        expected.setSpecialPagesPrivileges(Collections.emptyList());
         expected.setRoles(Collections.emptyList());
 
         User user = UserMapper.toUser(userDto);
@@ -139,7 +141,9 @@ class UserServiceTest {
         userDto.setLastName("lastname");
         userDto.setEmail("test@test.com");
         userDto.setEnabled(true);
+        userDto.setPassword("");
         userDto.setRoles(Collections.emptyList());
+        userDto.setSpecialPagesPrivileges(Collections.emptyList());
 
         User user = UserMapper.toUser(userDto);
         user.setFirstName("firstname");
@@ -157,9 +161,7 @@ class UserServiceTest {
         // Assert
         verify(userRepository, times(1)).findByEmail(userDto.getEmail());
 
-        assertThat(actualResult)
-                .isNotNull()
-                .isEqualTo(userDto);
+        assertThat(actualResult).isEqualTo(userDto);
 
     }
 
@@ -191,7 +193,9 @@ class UserServiceTest {
         userDto.setLastName("lastname");
         userDto.setEmail("test@test.com");
         userDto.setEnabled(true);
+        userDto.setPassword("");
         userDto.setRoles(Collections.emptyList());
+        userDto.setSpecialPagesPrivileges(Collections.emptyList());
 
         User user = new User();
         user.setFirstName("firstname");
