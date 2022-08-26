@@ -56,7 +56,6 @@ class RoleControllerTest {
 
         roleDto = new RoleDto();
         roleDto.setName("SOME ROLE NAME");
-        roleDto.setCreatedAt(LocalDateTime.now());
         roleDto.setPagePrivilegeMap(Collections.emptyMap());
 
         baserUrl = "/role";

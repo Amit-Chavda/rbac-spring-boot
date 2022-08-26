@@ -6,6 +6,7 @@ import com.springsecurity.rbac.springsecurityrbac.entity.User;
 import com.springsecurity.rbac.springsecurityrbac.entity.security.PagesPrivileges;
 
 import java.util.Collection;
+import java.util.Collections;
 
 public class UserMapper {
     public static UserDto toUserDto(User user) {
@@ -28,7 +29,10 @@ public class UserMapper {
                             }).toList();
 
             userDto.setSpecialPagesPrivileges(pagesPrivilegesDtos);
+        } else {
+            userDto.setSpecialPagesPrivileges(Collections.emptyList());
         }
+        userDto.setPassword("");
         return userDto;
     }
 

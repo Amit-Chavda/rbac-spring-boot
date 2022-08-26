@@ -137,6 +137,7 @@ class UserRoleServiceTest {
 
         UserDto expectedUserDto = UserMapper.toUserDto(user);
         expectedUserDto.setRoles(Collections.emptyList());
+        when(roleRepository.existsByName(roleName)).thenReturn(true);
         when(roleRepository.findByName(roleName)).thenReturn(role);
         when(userRepository.findByEmail(username)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);

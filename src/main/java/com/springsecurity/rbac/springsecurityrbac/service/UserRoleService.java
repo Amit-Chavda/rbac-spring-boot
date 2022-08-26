@@ -10,6 +10,7 @@ import com.springsecurity.rbac.springsecurityrbac.mapper.UserMapper;
 import com.springsecurity.rbac.springsecurityrbac.repository.PagesPrivilegesRepository;
 import com.springsecurity.rbac.springsecurityrbac.repository.RoleRepository;
 import com.springsecurity.rbac.springsecurityrbac.repository.UserRepository;
+import com.springsecurity.rbac.springsecurityrbac.util.Console;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -41,12 +42,16 @@ public class UserRoleService {
     public UserDto assignRole(AssignRole assignRole) throws UsernameNotFoundException, RoleNotFoundException {
 
         User user = userRepository.findByEmail(assignRole.getUsername()).orElseThrow(
-                () -> new UsernameNotFoundException("User with email " + assignRole.getUsername() + " not found")
+                () -> {
+                    Console.println(assignRole.getUsername() + " noootttt founddd", UserRoleService.class);
+                    throw new UsernameNotFoundException("User with email " + assignRole.getUsername() + " not found");
+                }
         );
 
         List<Role> roles = assignRole.getRoleNames().stream()
                 .map(roleName -> {
                     if (roleRepository.existsByName(roleName)) {
+                        Console.println(roleName + " noootttt founddd", UserRoleService.class);
                         return roleRepository.findByName(roleName);
                     }
                     throw new RoleNotFoundException("Role with name " + roleName + " not found");
@@ -75,7 +80,13 @@ public class UserRoleService {
         User user = userRepository.findByEmail(revokeRole.getUsername()).orElseThrow(
                 () -> new UsernameNotFoundException("User with email " + revokeRole.getUsername() + " not found")
         );
-        List<Role> revokingRoles = revokeRole.getRoleNames().stream().map(roleRepository::findByName).toList();
+        List<Role> revokingRoles = revokeRole.getRoleNames().stream()
+                .map(roleName -> {
+                    if (roleRepository.existsByName(roleName)) {
+                        return roleRepository.findByName(roleName);
+                    }
+                    throw new RoleNotFoundException("Role with name " + roleName + " not found");
+                }).toList();
 
         Collection<Role> roleCollection = new ArrayList<>(user.getRoles());
 

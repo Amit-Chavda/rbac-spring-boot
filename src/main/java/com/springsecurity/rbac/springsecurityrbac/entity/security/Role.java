@@ -18,6 +18,7 @@ public class Role {
     private Long id;
     private LocalDateTime createdAt;
     private String name;
+
     @ManyToMany(mappedBy = "roles", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<User> users;
 

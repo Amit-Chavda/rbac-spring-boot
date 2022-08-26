@@ -82,7 +82,7 @@ public class RoleService {
         return RoleMapper.toRoleDtos(roleRepository.findAll());
     }
 
-    public RoleDto updateRole(RoleDto roleDto) throws RoleNotFoundException,NoSuchElementException {
+    public RoleDto updateRole(RoleDto roleDto) throws RoleNotFoundException, NoSuchElementException {
 
         if (!roleRepository.existsByName(roleDto.getName())) {
             throw new RoleNotFoundException("Role with name " + roleDto.getName() + " not found");
@@ -90,7 +90,7 @@ public class RoleService {
 
         Role role = roleRepository.findByName(roleDto.getName());
 
-        Collection<RolePagesPrivileges> rolePagesPrivilegesList =
+        Collection<RolePagesPrivileges> rolePagesPrivilegesList = new ArrayList<>(
                 RoleMapper.toRole(roleDto).getRolePagesPrivileges().stream()
                         .map(rolePagesPrivileges -> {
                             //get page from database
@@ -112,10 +112,11 @@ public class RoleService {
                             rolePagesPrivileges.setPagesPrivileges(pagesPrivileges);
                             rolePagesPrivileges.setRole(role);
                             return rolePagesPrivilegesService.addOrGet(rolePagesPrivileges);
-                        }).toList();
+                        }).toList());
 
         role.setRolePagesPrivileges(rolePagesPrivilegesList);
-        return RoleMapper.toRoleDto(roleRepository.save(role));
+        Role role1 = roleRepository.save(role);
+        return RoleMapper.toRoleDto(role1);
     }
 
     public RoleDto findByName(String name) {

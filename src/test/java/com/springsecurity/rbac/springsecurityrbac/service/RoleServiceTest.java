@@ -59,7 +59,6 @@ class RoleServiceTest {
         roleName = "ADMIN";
         roleDto = new RoleDto();
         roleDto.setName(roleName);
-        roleDto.setCreatedAt(LocalDateTime.now());
         roleDto.setPagePrivilegeMap(Collections.emptyMap());
 
         role = new Role();
