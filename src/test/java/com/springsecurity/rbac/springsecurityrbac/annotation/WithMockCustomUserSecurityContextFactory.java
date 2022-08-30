@@ -1,8 +1,6 @@
 package com.springsecurity.rbac.springsecurityrbac.annotation;
 
-import com.springsecurity.rbac.springsecurityrbac.entity.security.UserDetailsImpl;
 import com.springsecurity.rbac.springsecurityrbac.service.UserDetailsServiceImpl;
-import com.springsecurity.rbac.springsecurityrbac.util.Console;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
