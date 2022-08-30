@@ -1,3 +1,10 @@
+DROP TABLE IF EXISTS `users_roles`;
+DROP TABLE IF EXISTS `role_pages_privileges`;
+DROP TABLE IF EXISTS `users`;
+DROP TABLE IF EXISTS `role`;
+DROP TABLE IF EXISTS `pages_privileges`;
+
+
 DROP TABLE IF EXISTS `privilege`;
 CREATE TABLE `privilege` (
   `id` bigint NOT NULL AUTO_INCREMENT,
@@ -14,7 +21,6 @@ CREATE TABLE `page` (
 );
 
 
-DROP TABLE IF EXISTS `pages_privileges`;
 CREATE TABLE `pages_privileges` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `page_id` bigint DEFAULT NULL,
@@ -24,7 +30,7 @@ CREATE TABLE `pages_privileges` (
   FOREIGN KEY (`page_id`) REFERENCES page(id)
 );
 
-DROP TABLE IF EXISTS `role`;
+
 CREATE TABLE `role` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `created_at` datetime DEFAULT NULL,
@@ -32,7 +38,7 @@ CREATE TABLE `role` (
   PRIMARY KEY (`id`)
 );
 
-DROP TABLE IF EXISTS `users`;
+
 CREATE TABLE `users` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `created_at` datetime DEFAULT NULL,
@@ -46,8 +52,6 @@ CREATE TABLE `users` (
 );
 
 
-
-DROP TABLE IF EXISTS `users_roles`;
 CREATE TABLE `users_roles` (
   `user_id` bigint NOT NULL,
   `role_id` bigint NOT NULL,
@@ -56,7 +60,6 @@ CREATE TABLE `users_roles` (
 );
 
 
-DROP TABLE IF EXISTS `role_pages_privileges`;
 CREATE TABLE `role_pages_privileges` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `pages_privileges_id` bigint DEFAULT NULL,
